@@ -8,7 +8,9 @@ useEffect(() => {
     console.log(keycloak.authenticated)
 }, [keycloak])
     return(
+        
         <div>
+            {/* {keycloak.loadUserInfo} */}
             {`User is ${!keycloak.authenticated ? 'NOT ' : ''}authenticated`}
             {!keycloak.authenticated && (
                 <button
@@ -18,8 +20,14 @@ useEffect(() => {
             )}
             {
                 !!keycloak.authenticated &&
+                <div>
                 <button type="button" onClick={() => keycloak.logout()}>Logout</button>
+                <a href='/meetingRoom'>Go</a>
+                </div>
             }   
+            {
+                !!keycloak.authenticated && console.log(keycloak.idToken)   
+            } 
         </div>
     );
 }
