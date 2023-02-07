@@ -32,3 +32,14 @@ instance.interceptors.response.use(
 )
 
 export const getVideoSDKAuthToken = data => instance.get('/get-token', data);
+export const postCreateMeetingId = async (token) => {
+    await axios.post('http://localhost:3001/create/meeting', {token:`${token}`}, {
+        headers: {
+            "Content-Type": "application/json",
+            authorization: `${token}`,
+        },
+    }).then((res) => {
+        console.log(res.data)
+        return res.data
+    })
+}

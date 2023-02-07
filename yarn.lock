@@ -2278,6 +2278,11 @@
     "@videosdk.live/js-sdk" "0.0.59"
     "events" "^3.3.0"
 
+"@videosdk.live/rtc-js-prebuilt@^0.3.23":
+  "integrity" "sha512-rJXXbtXxHeGAGi1ifCEpMt4AHyQcjaa2XwNacKq0NmFW0U+22Q4Jl/6NAabSXaU1ep1x+d/VHgZzYT5NkjP0Jw=="
+  "resolved" "https://registry.npmjs.org/@videosdk.live/rtc-js-prebuilt/-/rtc-js-prebuilt-0.3.23.tgz"
+  "version" "0.3.23"
+
 "@webassemblyjs/ast@1.11.1":
   "integrity" "sha512-ukBh14qFLjxTQNTXocdyksN5QdM28S1CxHt2rdskFyL+xFV7VremuBLVbmCePj+URalXBENx/9Lm7lnhihtCSw=="
   "resolved" "https://registry.npmjs.org/@webassemblyjs/ast/-/ast-1.11.1.tgz"
