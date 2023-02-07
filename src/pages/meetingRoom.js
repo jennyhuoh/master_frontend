@@ -16,7 +16,7 @@ export default function MeetingRoom() {
     return(
         <div>
             {console.log(videoSDKAuthTokenQuery.data)}
-            meeting room2
+            meeting room
         </div>
     );
 }
