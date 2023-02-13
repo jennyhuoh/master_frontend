@@ -1,5 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import CssBaseLine from '@mui/material/CssBaseline';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import './index.css';
 import App from './App';
 // import { ApiProvider } from '@reduxjs/toolkit/dist/query/react';
@@ -7,11 +9,28 @@ import App from './App';
 import { BrowserRouter } from 'react-router-dom';
 import reportWebVitals from './reportWebVitals';
 
+// const theme = createTheme({
+//   palette: {
+//     primary: {
+//       main: '',
+//     },
+//     secondary: {
+//       main: '',
+//     },
+//   },
+//   typography: {
+//     fontFamily: '',
+//   },
+// });
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   // <ApiProvider api={apiSlice}>
     <BrowserRouter>
-      <App />
+      {/* <CssBaseLine /> */}
+      {/* <ThemeProvider theme={theme}> */}
+        <App />
+      {/* </ThemeProvider> */}
     </BrowserRouter>
   // </ApiProvider>
 );

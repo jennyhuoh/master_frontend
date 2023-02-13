@@ -9,6 +9,7 @@ import {
 import keycloak from './keycloak';
 import Login from './pages/login';
 import MeetingRoom from './pages/meetingRoom';
+import InMeetingRoom from './pages/inMeetingRoom';
 // import KeycloakPage from './keycloak';
 
 const queryClient = new QueryClient()
@@ -20,6 +21,7 @@ export default function App() {
       <Routes>
         <Route path='/' element={<Login />} />
         <Route path='/meetingRoom' element={<MeetingRoom />} />
+        <Route path='/inMeetingRoom' element={<InMeetingRoom />} />
       </Routes>
       <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
