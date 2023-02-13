@@ -39,11 +39,9 @@ export const postCreateMeetingId = async (token, data) => {
             authorization: `${token}`,
         },
     }, data)
-    // console.log(data)
-    // return data
     .then((res) => {
-        console.log(res.data.id)
-        localStorage.setItem('meetingId', res.data.id)
+        console.log(res.data.roomId)
+        localStorage.setItem('meetingId', res.data.roomId)
         return res.data
     })
 }
