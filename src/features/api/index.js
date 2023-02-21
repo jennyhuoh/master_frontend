@@ -45,3 +45,24 @@ export const postCreateMeetingId = async (token, data) => {
         return res.data
     })
 }
+// export const getRecordings = async (token, roomId, data) => {
+//     await axios.get('http://localhost:3001/get-recordings', {token:`${token}`, roomId: `${roomId}`}, {
+//         headers: {
+//             "Content-Type": "application/json",
+//             Authorization: `${token}`,
+//         },
+// }, data)
+// .then((res) => {
+//     console.log(res.data)
+// })
+// }
+export const getRecordings = async ({token, roomId}) => { 
+    const response = await axios.get(`https://api.videosdk.live/v2/recordings?roomId=${roomId}`, {
+        headers: {
+            "Content-Type": "application/json",
+            authorization: `${token}`,
+        },
+    })
+    console.log(response)
+    return response.data
+}

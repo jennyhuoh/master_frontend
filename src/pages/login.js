@@ -7,10 +7,13 @@ import Header from '../components/header';
 
 export default function Login() {
     return(
-        // <div>hi</div>
         <Box>
             <Header />
+            
             <Button variant="contained" component={Link} to="/meetingRoom">Go to the meeting</Button>
+
+            <Button variant="contained" component={Link} to="/audioRoom">Go to the audioRoom</Button>
+            <Button variant="contained" component={Link} to="/home">Go home</Button>
         </Box>
     );
 // const { keycloak, initialized } = useKeycloak()

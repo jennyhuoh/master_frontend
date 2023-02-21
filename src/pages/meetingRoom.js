@@ -12,12 +12,16 @@ import {
     Constants,
 } from "@videosdk.live/react-sdk";
 import { useState, useRef, useMemo, useEffect } from 'react';
+import ReactPlayer from 'react-player';
 import Header from '../components/header'
 import { 
     getVideoSDKAuthToken,
     postCreateMeetingId,
+    getRecordings
 } from "../features/api";
-import ReactPlayer from 'react-player';
+import useIsRecording from '../hooks/useIsRecording';
+import { OutlinedButton } from '../components/buttons/OutlineButton';
+import RecordingIcon from '../icons/RecordingIcon';
 
 function JoinScreen({getMeetingAndToken}) {
     const [meetingId, setMeetingId] = useState(null);
@@ -53,7 +57,7 @@ function Container(props) {
             <h3>Meeting Id: {props.meetingId}</h3>
             {joined ? (
                 <div>
-                    <Controls />
+                    <Controls token={props.token} />
                     {[...participants.keys()].map((participantId) => (
                         <VideoComponent key={participantId} participantId={participantId} />
                     ))}
@@ -65,13 +69,68 @@ function Container(props) {
     );
 }
 
-function Controls() {
-    const { leave, toggleMic, toggleWebcam } = useMeeting();
+function Controls(props) {
+    const { leave, toggleMic, toggleWebcam, startRecording, stopRecording, recordingState } = useMeeting();
+    const isRecording = useIsRecording();
+    const isRecordinfRef = useRef(isRecording);
+    const { mutateAsync } = useMutation(getRecordings, {
+        onError: () => {
+            alert('error happened');
+        },
+        onSuccess: async(res) => {
+            console.log(res);
+            console.log('success');
+        }
+    })
+
+    useEffect(() => {
+        isRecordinfRef.current = isRecording;
+    }, [isRecording]);
+
+    const { isRequestProcessing } = useMemo(() => ({
+        isRequestProcessing:
+            recordingState === Constants.recordingEvents.RECORDING_STARTING || recordingState === Constants.recordingEvents.RECORDING_STOPPING,
+    }), [recordingState]);
+
+    const onClickRecord = () => {
+        const isRecording = isRecordinfRef.current;
+        if(isRecording) {
+            stopRecording();
+            console.log("stop recording");
+            // console.log(localStorage.getItem('meetingId'));
+            // console.log(props.token)
+            const data = mutateAsync({token:`${props.token}`, roomId:localStorage.getItem('meetingId')})
+            console.log(data);
+        } else {
+            startRecording();
+            console.log("start recording");
+        }
+    }
+
     return(
         <div>
-            <button onClick={leave}>Leave Meeting</button>
+            <button onClick={()=>leave()}>Leave Meeting</button>
             <button onClick={()=>toggleMic()}>Toggle Mic</button>
             <button onClick={()=>toggleWebcam()}>Toggle Webcam</button>
+            <OutlinedButton
+                Icon={RecordingIcon}
+                onClick={onClickRecord}
+                isFocused={isRecording}
+                buttonText={!isRecording && "REC"}
+                tooltip={
+                recordingState === Constants.recordingEvents.RECORDING_STARTED
+                    ? "Stop Recording"
+                    : recordingState === Constants.recordingEvents.RECORDING_STARTING
+                    ? "Starting Recording"
+                    : recordingState === Constants.recordingEvents.RECORDING_STOPPED
+                    ? "Start Recording"
+                    : recordingState === Constants.recordingEvents.RECORDING_STOPPING
+                    ? "Stopping Recording"
+                    : "Start Recording"
+                }
+                lottieOption={null}
+                isRequestProcessing={isRequestProcessing}
+            />
         </div>
     );
 }
@@ -156,7 +215,7 @@ export default function MeetingRoom() {
                     token={localStorage.getItem('meetingToken')}
                 >
                     <MeetingConsumer>
-                        {() => <Container meetingId={meetingId} />}
+                        {() => <Container meetingId={meetingId} token={videoSDKAuthTokenQuery.data.data.token} />}
                     </MeetingConsumer>
                 </MeetingProvider>
                 : <JoinScreen getMeetingAndToken={getMeetingAndToken} />
