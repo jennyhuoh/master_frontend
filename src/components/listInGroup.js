@@ -1,62 +1,44 @@
-import { Box, Divider, Paper, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Switch, Button, IconButton, Collapse } from "@mui/material";
-import { MoreHoriz } from "@mui/icons-material";
+import { Box, Divider, Paper, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Button } from "@mui/material";
 import { useEffect, useState } from "react";
-import { KeyboardArrowRight, KeyboardArrowDown } from "@mui/icons-material";
+import { Link } from "react-router-dom";
 
-function createData(name, date, describe) {
-  return { name, date, describe };
+function createData(name, date) {
+  return { name, date };
 }
 
 const rows = [
-  createData('Frozen yoghurt', 159, 6.0, 24, 4.0),
-  createData('Ice cream sandwich', 237, 9.0, 37, 4.3),
-  createData('Eclair', 262, '33.7305305305305305305305333333討論活動列表討論活動列表討論活動列表討論活動列表討論活動列表討論活動列表討論活動列表討論活動列表討論活動列表討論活動列表討論活動列表', 24, 6.0),
-  createData('Cupcake', 305, '33.7305305305305305305305333333討論活動列表討論活動列表討論活動列表討論活動列表討論活動列表討論活動列表討論活動列表討論活動列表討論活動列表討論活動列表討論活動列表', 67, 4.3),
-  createData('Gingerbread', 356, 16.0, 49, 3.9),
+  createData('Frozen yoghurt', 159),
+  createData('Ice cream sandwich', 237),
+  createData('Eclair', 262,),
+  createData('Cupcake', 305),
+  createData('Gingerbread', 356),
 ];
 const Rows = (props) => {
-    const [open, setOpen] = useState(false);
     return(
     <TableRow
     style={{maxHeight: '10px'}}
     // key={row.name}
     sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
     >
-        <TableCell style={{width:'2%', padding:0, verticalAlign:'baseline'}}>
-        {props.row.describe.length >= 31 && 
-        <IconButton onClick={() => setOpen(!open)}>
-            {open ? <KeyboardArrowDown /> : <KeyboardArrowRight />}
-        </IconButton>
-        }
-        </TableCell>
-        <TableCell style={{width:'20%'}} component="th" scope="row">
+        <TableCell style={{width:'38%', verticalAlign:'baseline'}} component="th" scope="row">
             {props.row.name}
         </TableCell>
-        <TableCell style={{width:'15%'}} align="center">{props.row.date}</TableCell>  
-        {!open ? 
-        <TableCell 
-        style={{width:'30%', maxWidth:'20vw', whiteSpace:'nowrap', textOverflow:'ellipsis', overflow:'hidden'}} 
-        >
-            {props.row.describe}
-        </TableCell> :
-        <TableCell style={{width:'30%'}}>{props.row.describe}</TableCell>
-        }
-        <TableCell style={{width:'5%'}} align="center">
-            <Button variant="contained" color="secondary">分組</Button>
-        </TableCell>
-        <TableCell style={{width:'6%'}} align="center">
-            <Switch color="info" />
-        </TableCell>
-        <TableCell style={{width:'17%'}} align="center">
+        <TableCell style={{width:'35%', verticalAlign:'baseline'}} align="center">{props.row.date}</TableCell>
+        <TableCell style={{width:'17%', verticalAlign:'baseline'}} align="right">
             <Button variant="contained">開始討論</Button>
         </TableCell>
-        <TableCell style={{width:'5%'}} align="center">
-            <IconButton><MoreHoriz sx={{color:'grey', fontSize:'20px'}} /></IconButton>
+        <TableCell style={{width:'5%', verticalAlign:'baseline'}} align="center">
+            <Button variant="contained" color='secondary'>編輯</Button>
+        </TableCell>
+        <TableCell style={{width:'5%', verticalAlign:'baseline'}} align="center">
+            <Button variant="outlined" color='error'>刪除</Button>
         </TableCell>
     </TableRow>
     );
 }
+
 export default function ListInGroup() {
+    if(true){
     return(
         <Box m={'2vw 3vw 2vw 3vw'}>
         <Paper style={{marginTop:'15px', backgroundColor:'white', padding:'2vw', marginBottom:'30px'}}>
@@ -66,13 +48,10 @@ export default function ListInGroup() {
                 <Table sx={{ minWidth: 650 }} aria-label="simple table">
                     <TableHead>
                     <TableRow>
-                        <TableCell style={{width:'2%'}} align="center"> </TableCell>
-                        <TableCell style={{width:'20%', padding:0}}>討論活動名稱</TableCell>
-                        <TableCell style={{width:'15%'}} align="center">討論日期</TableCell>
-                        <TableCell style={{width:'30%'}} align='center'>活動描述</TableCell>
+                        <TableCell style={{width:'38%', padding:0}}>討論活動名稱</TableCell>
+                        <TableCell style={{width:'35%'}} align="center">討論日期</TableCell> 
+                        <TableCell style={{width:'17%'}} align="right"> </TableCell>
                         <TableCell style={{width:'5%'}} align="center"> </TableCell>
-                        <TableCell style={{width:'6%'}} align="center">開啟權限</TableCell>
-                        <TableCell style={{width:'17%'}} align="center"> </TableCell>
                         <TableCell style={{width:'5%'}} align="center"> </TableCell>
                     </TableRow>
                     </TableHead>
@@ -83,5 +62,7 @@ export default function ListInGroup() {
             </TableContainer>
         </Paper>
         </Box>
-    );
+    );} else {
+        return(<></>);
+    }
 }

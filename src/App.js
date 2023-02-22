@@ -1,5 +1,5 @@
 import './App.css';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useParams } from 'react-router-dom';
 import { ReactKeycloakProvider } from '@react-keycloak/web';
 import { ReactQueryDevtools } from 'react-query/devtools';
 import { 
@@ -13,6 +13,7 @@ import InMeetingRoom from './pages/inMeetingRoom';
 import AudioRoom from './pages/audioRoom';
 import Home from './pages/home';
 import DiscussGroup from './pages/discussGroup';
+import GroupResult from './pages/groupResult';
 // import KeycloakPage from './keycloak';
 
 const queryClient = new QueryClient()
@@ -28,9 +29,16 @@ export default function App() {
         <Route path='/audioRoom' element={<AudioRoom />} />
         <Route path='/home' element={<Home />} />
         <Route path='/discussGroup' element={<DiscussGroup />} />
+        <Route path='/groupResult/:discussId' element={<Child />} />
       </Routes>
       <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
     </ReactKeycloakProvider>
   );
+  function Child() {
+    let {discussId} = useParams();
+    return(
+      <GroupResult discussId={discussId}/>
+    );
+  }
 }

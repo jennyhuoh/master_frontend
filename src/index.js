@@ -1,6 +1,5 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import CssBaseLine from '@mui/material/CssBaseline';
 import { createTheme, ThemeProvider } from '@mui/material';
 import './index.css';
 import App from './App';
@@ -13,13 +12,15 @@ const theme = createTheme({
   palette: {
     primary: {
       main: '#F6BD58',
-      light: 'FFFFFF'
     },
     info: {
       main: '#5A81A8'
     },
     secondary: {
       main: '#FFFFFF',
+    },
+    warning: {
+      main: '#000000'
     }
   }
 });

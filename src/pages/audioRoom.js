@@ -11,7 +11,6 @@ export default function AudioRoom() {
         setWs(webSocket('http://localhost:3001'));
     }
 
-
     useEffect(() => {
         if(ws) {
             console.log('success connect!')

@@ -38,12 +38,12 @@ export default function DiscussGroupInfo() {
     if(true) {
         return(
             <Box m={'3vw 3vw 2vw 3vw'}>
-                <IconButton style={{color:'black'}} component={Link} to='/home'><ArrowBackIosNew sx={{fontSize:'1.5vw'}} /></IconButton><span style={{fontWeight:'bold', fontSize:'2vw', marginLeft:'10px'}}>群組名稱在這裡</span>
+                <IconButton style={{color:'black', marginBottom:'5px'}} component={Link} to='/home'><ArrowBackIosNew sx={{fontSize:'1.5vw'}} /></IconButton><span style={{fontWeight:'bold', fontSize:'2vw', marginLeft:'10px'}}>群組名稱在這裡</span>
                 {/* 群組資訊 */}
-                <Paper style={{marginTop:'30px', backgroundColor:'white', padding:'2vw'}}>
+                <Paper style={{marginTop:'15px', backgroundColor:'white', padding:'2vw'}}>
                     <Grid container spacing={20} style={{padding:'0 20px'}}>
                         <Grid item xs={6}>
-                            <TextField style={{width:'35vw', marginTop:'10px'}} InputLabelProps={{shrink:true,}} variant="standard" label="群組名稱" />
+                            <TextField style={{width:'35vw', marginTop:'10px'}} InputLabelProps={{shrink:true,}} variant="standard" label="群組名稱" color="warning" />
                         </Grid>
                         <Grid item xs={6}>
                             <p style={{color:'grey', fontSize:'0.2vw'}}>管理者</p>
