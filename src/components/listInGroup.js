@@ -1,6 +1,7 @@
 import { Box, Divider, Paper, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Button } from "@mui/material";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { v4 as uuid } from 'uuid';
 
 function createData(name, date) {
   return { name, date };
@@ -14,6 +15,7 @@ const rows = [
   createData('Gingerbread', 356),
 ];
 const Rows = (props) => {
+    const id = uuid();
     return(
     <TableRow
     style={{maxHeight: '10px'}}
@@ -25,7 +27,7 @@ const Rows = (props) => {
         </TableCell>
         <TableCell style={{width:'35%', verticalAlign:'baseline'}} align="center">{props.row.date}</TableCell>
         <TableCell style={{width:'17%', verticalAlign:'baseline'}} align="right">
-            <Button variant="contained">開始討論</Button>
+            <Button variant="contained" component={Link} to={'/mainRoom/'+id}>開始討論</Button>
         </TableCell>
         <TableCell style={{width:'5%', verticalAlign:'baseline'}} align="center">
             <Button variant="contained" color='secondary'>編輯</Button>

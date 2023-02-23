@@ -14,6 +14,7 @@ import AudioRoom from './pages/audioRoom';
 import Home from './pages/home';
 import DiscussGroup from './pages/discussGroup';
 import GroupResult from './pages/groupResult';
+import MainRoom from './pages/mainRoom';
 // import KeycloakPage from './keycloak';
 
 const queryClient = new QueryClient()
@@ -30,6 +31,7 @@ export default function App() {
         <Route path='/home' element={<Home />} />
         <Route path='/discussGroup' element={<DiscussGroup />} />
         <Route path='/groupResult/:discussId' element={<Child />} />
+        <Route path='/mainRoom/:roomId' element={<Child2 />} />
       </Routes>
       <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
@@ -39,6 +41,12 @@ export default function App() {
     let {discussId} = useParams();
     return(
       <GroupResult discussId={discussId}/>
+    );
+  }
+  function Child2() {
+    let {roomId} = useParams();
+    return(
+      <MainRoom roomId={roomId}/>
     );
   }
 }

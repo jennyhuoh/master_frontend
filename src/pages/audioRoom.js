@@ -14,7 +14,7 @@ export default function AudioRoom() {
     useEffect(() => {
         if(ws) {
             console.log('success connect!')
-            initWebSocket()
+            initWebSocket() 
         }
     }, [ws])
 

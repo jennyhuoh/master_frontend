@@ -1,4 +1,4 @@
-import { Box, IconButton, Paper, TableContainer, Table, TableHead, TableBody, TableRow, TableCell, Switch } from "@mui/material";
+import { Box, IconButton, Paper, TableContainer, Table, TableHead, TableBody, TableRow, TableCell } from "@mui/material";
 import { ArrowBackIosNew } from "@mui/icons-material";
 import { Link } from "react-router-dom";
 
@@ -26,8 +26,7 @@ export default function GroupResultContent() {
                         <TableRow>
                             <TableCell style={{width:'25%'}}>小組名稱</TableCell>
                             <TableCell style={{width:'50%'}}>成員</TableCell>
-                            <TableCell align="center" style={{width:'10%'}}>開啟權限</TableCell>
-                            <TableCell align="center" style={{width:'15%'}}>全部開啟<Switch color="info" /></TableCell>
+                            <TableCell align="center" style={{width:'15%'}}></TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
