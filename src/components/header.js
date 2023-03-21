@@ -3,6 +3,7 @@ import { styled, useTheme } from "@mui/material/styles";
 import { useKeycloak } from "@react-keycloak/web";
 import { Menu, ChevronLeft, ChevronRight, ExpandLess, ExpandMore } from "@mui/icons-material";
 import { useState } from 'react';
+import AvatarGroup from 'react-avatar-group';
 
 const drawerWidth = 240;
 
@@ -60,6 +61,16 @@ export default function Header() {
                 <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
                     OCLP
                 </Typography>
+                <Box style={{display:'flex', backgroundColor:'white', borderRadius:'3px', color:'#2B3143', padding:'5px 10px', marginRight:'15px'}}>
+                    <Typography style={{marginRight:'5px', fontSize:'14px', alignSelf:'center', fontWeight:'bolder'}}>歡迎，{localStorage.getItem('userName')}</Typography>
+                    <AvatarGroup
+                        avatars={[`${localStorage.getItem('smallName')}`]}
+                        size={26}
+                        fontSize={0.4}
+                        initialCharacters={2}
+                        hideTooltip={true}
+                    />
+                </Box>
                 {keycloak.authenticated ?
                     <Button variant="outlined" color="secondary" onClick={onClickLogout}>Logout</Button> :
                     <Button variant="outlined" color="secondary" onClick={() => keycloak.login()}>Login</Button>

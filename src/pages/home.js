@@ -5,6 +5,7 @@ import Header from '../components/header.js';
 
 
 export default function Home() {
+    // console.log(localStorage.getItem('role') === 'teacher');
     if(true) {
         return(
             <Box>

@@ -2,10 +2,8 @@
 import { useKeycloak } from '@react-keycloak/web';
 import { useEffect, useState } from 'react';
 import { Box, Button, Typography } from '@mui/material';
-import { Link } from 'react-router-dom';
 import { Groups2TwoTone, PersonOutlineTwoTone } from '@mui/icons-material';
 import { useMutation } from 'react-query';
-import Header from '../components/header';
 import Home from './home';
 import { createOrGetUser } from '../features/api';
 
@@ -14,7 +12,6 @@ export default function Login() {
     const [ flag, setFlag ] = useState(0);
     const { mutate } = useMutation(createOrGetUser, {
         onSuccess: async(res) => {
-            // console.log('here', res);
             localStorage.setItem('userEmail',res.data.userEmail);
             localStorage.setItem('userName', res.data.userName);
             localStorage.setItem('role', res.data.userRole);
@@ -24,12 +21,12 @@ export default function Login() {
     useEffect(() => {
         if(keycloak.authenticated){
             keycloak.loadUserInfo().then((result) => {
-                console.log(result)
                 mutate({
                     userName: result.family_name + result.given_name,
                     userEmail: result.email,
                     userRole: localStorage.getItem('role')
                 })
+                localStorage.setItem('smallName', result.given_name);
             })
         }
     }, [flag])
