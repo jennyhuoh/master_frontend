@@ -1,11 +1,15 @@
 import Keycloak from "keycloak-js";
 
+// const keycloak = new Keycloak({
+//     url: "http://140.115.126.42/auth/",
+//     realm: "master",
+//     clientId: "online-meeting-cooperation"
+// })
 const keycloak = new Keycloak({
     url: "http://localhost:10001/auth/",
     realm: "wulab",
     clientId: "online-meeting-cooperation"
 })
-
 export default keycloak;
 
 

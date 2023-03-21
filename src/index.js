@@ -11,16 +11,16 @@ import reportWebVitals from './reportWebVitals';
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#F6BD58',
+      main: '#F6BD58',//黃
     },
     info: {
-      main: '#5A81A8'
+      main: '#5A81A8'//light blue
     },
     secondary: {
       main: '#FFFFFF',
     },
     warning: {
-      main: '#000000'
+      main: '#2B3143'
     }
   }
 });
