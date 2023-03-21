@@ -31,6 +31,9 @@ instance.interceptors.response.use(
     }
 )
 
+// create or get a user
+export const createOrGetUser = data => instance.post('/user', data);
+
 export const getVideoSDKAuthToken = data => instance.get('/get-token', data);
 export const postCreateMeetingId = async (token, data) => {
     await axios.post('http://localhost:3001/create-meeting/', {token:`${token}`}, {

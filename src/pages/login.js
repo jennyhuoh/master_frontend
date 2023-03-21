@@ -1,27 +1,52 @@
 // import PostsList from "../features/posts/postsList";
 import { useKeycloak } from '@react-keycloak/web';
 import { useEffect, useState } from 'react';
-import { Box, Button } from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
+import { Groups2TwoTone, PersonOutlineTwoTone } from '@mui/icons-material';
+import { useMutation } from 'react-query';
 import Header from '../components/header';
 import Home from './home';
-import { ConstructionOutlined } from '@mui/icons-material';
+import { createOrGetUser } from '../features/api';
 
 export default function Login() {
     const { keycloak } = useKeycloak();
     const [ flag, setFlag ] = useState(0);
+    const { mutate } = useMutation(createOrGetUser, {
+        onSuccess: async(res) => {
+            // console.log('here', res);
+            localStorage.setItem('userEmail',res.data.userEmail);
+            localStorage.setItem('userName', res.data.userName);
+            localStorage.setItem('role', res.data.userRole);
+        }
+    })
+
     useEffect(() => {
         if(keycloak.authenticated){
             keycloak.loadUserInfo().then((result) => {
                 console.log(result)
-                localStorage.setItem('userEmail', result.email);
-                localStorage.setItem('userName', result.family_name + result.given_name);
+                mutate({
+                    userName: result.family_name + result.given_name,
+                    userEmail: result.email,
+                    userRole: localStorage.getItem('role')
+                })
             })
         }
     }, [flag])
+
     useEffect(() => {
         if(keycloak.authenticated){setFlag(1)}
     }, [keycloak.authenticated])
+
+    const onClickStudent = () => {
+        keycloak.login();
+        localStorage.setItem('role', 'student');
+    }
+    const onClickTeacher = () => {
+        keycloak.login();
+        localStorage.setItem('role', 'teacher');
+    }
+
     return(
         <>
         {keycloak.authenticated ?
@@ -29,10 +54,23 @@ export default function Login() {
             <Home />
             </>
             :
-            <Button variant="contained" onClick={() => keycloak.login()}>Login</Button>
+            <Box style={{width:'100vw', height:'100vh', display:'flex', justifyContent:'center', alignItems:'center'}} sx={{backgroundColor:'#2B3143'}}>
+                <Box style={{width:'35%', height:'34%', backgroundColor:'white', fontSize:'2.6vw', fontWeight:'semi-bold', borderRadius:'10px', padding:'40px', display:'flex', alignItems:'center', flexDirection:'column', marginTop:0}}>
+                    登入身份
+                    <Box style={{display:'flex', marginTop:'60px', width:'100%', display:'flex', alignItems:'center', justifyContent:'space-around'}}>
+                        <Button style={{width:'40%', height:'100%', display:'flex', alignItems:'center', flexDirection:'column', padding:'20px'}} variant="contained" onClick={onClickStudent}>
+                            <Groups2TwoTone style={{marginBottom:'10px'}} />
+                            <Typography style={{fontWeight:'bold', fontSize:'1.5vw'}} >學生</Typography>
+                        </Button>
+                        <Button style={{width:'40%', height:'100%', display:'flex', alignItems:'center', flexDirection:'column', padding:'20px'}} variant="contained" onClick={onClickTeacher}>
+                            <PersonOutlineTwoTone />
+                            <Typography style={{fontWeight:'bold', fontSize:'1.5vw'}} >老師</Typography>
+                        </Button>
+                    </Box>
+                </Box>
+            </Box>
         }
         </>
-        
         // <Box>
         //     <Header />
             
@@ -42,30 +80,4 @@ export default function Login() {
         //     <Button variant="contained" component={Link} to="/home">Go home</Button>
         // </Box>
     );
-// const { keycloak, initialized } = useKeycloak()
-// useEffect(() => {
-//     console.log(keycloak.authenticated)
-// }, [keycloak])
- 
-    // return keycloak.authenticated ? (
-    //     <button type="button" onClick={() => keycloak.logout()}>Logout</button>
-    // ) : (
-    //     <button
-    //         type="button"
-    //         onClick={() => keycloak.login()}
-    //     >Login</button>
-    // );
-    // return(
-        
-    //     <div>
-    //         {/* {keycloak.loadUserInfo} */}
-    //         {`User is ${!keycloak.authenticated ? 'NOT ' : ''}authenticated`}
-    //         {!keycloak.authenticated && (
-    //             <button
-    //                 type="button"
-    //                 onClick={() => keycloak.login()}
-    //             >Login</button>
-    //         )}
-    //     </div>
-    // );
 }

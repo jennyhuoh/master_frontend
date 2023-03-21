@@ -36,6 +36,12 @@ export default function Header() {
     const handleClickHistory = () => {
         setOpenHistory(!openHistory);
     };
+    const onClickLogout = () => {
+        keycloak.logout();
+        localStorage.setItem('userEmail', null);
+        localStorage.setItem('userName', null);
+        localStorage.setItem('role', null);
+    }
 
     return(
         <Box sx={{ flexGrow: 1 }} style={{marginBottom:"100px"}}>
@@ -55,7 +61,7 @@ export default function Header() {
                     OCLP
                 </Typography>
                 {keycloak.authenticated ?
-                    <Button variant="outlined" color="secondary" onClick={() => keycloak.logout()}>Logout</Button> :
+                    <Button variant="outlined" color="secondary" onClick={onClickLogout}>Logout</Button> :
                     <Button variant="outlined" color="secondary" onClick={() => keycloak.login()}>Login</Button>
                 }
                 </Toolbar>
