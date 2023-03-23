@@ -52,7 +52,12 @@ export const getAllUsers = async() => {
 };
 // create a group
 export const createGroup = data => instance.post('/group', data);
-
+// get all groups
+export const getAllGroups = async (userId) => {
+    const response = await instance.get(`/groups/${userId}`)
+    const data = await response.data;
+    return data;
+}
 
 
 

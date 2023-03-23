@@ -30,7 +30,7 @@ export default function App() {
         <Route path='/inMeetingRoom' element={<InMeetingRoom />} />
         <Route path='/audioRoom' element={<AudioRoom />} />
         <Route path='/home' element={<Home />} />
-        <Route path='/discussGroup' element={<DiscussGroup />} />
+        <Route path='/group/:groupId' element={<Child3 />} />
         <Route path='/groupResult/:discussId' element={<Child />} />
         <Route path='/mainRoom/:roomId' element={<Child2 />} />
         <Route path='/addGroup' element={<AddGroup />} />
@@ -49,6 +49,12 @@ export default function App() {
     let {roomId} = useParams();
     return(
       <MainRoom roomId={roomId}/>
+    );
+  }
+  function Child3() {
+    let {groupId} = useParams();
+    return(
+      <DiscussGroup groupId={groupId} />
     );
   }
 }

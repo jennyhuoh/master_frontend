@@ -10,11 +10,11 @@ import dayjs from "dayjs";
 import DiscussGroupInfo from "../components/discussGroupInfo.js";
 import ListInGroup from "../components/listInGroup.js";
 
-export default function DiscussGroup() {
+export default function DiscussGroup(pageDiscussGroupProps) {
     return(
         <Box style={{backgroundColor:'#EEF1F4', padding:'0', margin:'0',}}>
             <Header />
-            <DiscussGroupInfo />
+            <DiscussGroupInfo groupId={pageDiscussGroupProps.groupId} />
             <ListInGroup />
             <div style={{backgroundColor:'#EEF1F4', height:'2vw'}}></div>
         </Box>

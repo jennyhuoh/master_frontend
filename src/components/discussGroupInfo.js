@@ -7,7 +7,8 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { Link } from "react-router-dom";
 import dayjs from "dayjs";
 
-export default function DiscussGroupInfo() {
+export default function DiscussGroupInfo(appProps) {
+    console.log(appProps.groupId);
     const options= [
         {value: 'person1', label: 'person1'},
         {value: 'person2', label: 'person2'},
