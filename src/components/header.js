@@ -39,13 +39,14 @@ export default function Header() {
     };
     const onClickLogout = () => {
         keycloak.logout();
+        localStorage.setItem('userId', null);
         localStorage.setItem('userEmail', null);
         localStorage.setItem('userName', null);
         localStorage.setItem('role', null);
     }
 
     return(
-        <Box sx={{ flexGrow: 1 }} style={{marginBottom:"100px"}}>
+        <Box sx={{ flexGrow: 1 }}>
             <AppBar position="fixed" color="warning" open={openDrawer}>
                 <Toolbar>
                 <IconButton

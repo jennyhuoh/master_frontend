@@ -12,6 +12,7 @@ export default function Login() {
     const [ flag, setFlag ] = useState(0);
     const { mutate } = useMutation(createOrGetUser, {
         onSuccess: async(res) => {
+            localStorage.setItem('userId', res.data.id);
             localStorage.setItem('userEmail',res.data.userEmail);
             localStorage.setItem('userName', res.data.userName);
             localStorage.setItem('role', res.data.userRole);
@@ -54,7 +55,7 @@ export default function Login() {
             <Box style={{width:'100vw', height:'100vh', display:'flex', justifyContent:'center', alignItems:'center'}} sx={{backgroundColor:'#2B3143'}}>
                 <Box style={{width:'35%', height:'34%', backgroundColor:'white', fontSize:'2.6vw', fontWeight:'semi-bold', borderRadius:'10px', padding:'40px', display:'flex', alignItems:'center', flexDirection:'column', marginTop:0}}>
                     登入身份
-                    <Box style={{display:'flex', marginTop:'60px', width:'100%', display:'flex', alignItems:'center', justifyContent:'space-around'}}>
+                    <Box style={{display:'flex', marginTop:'60px', width:'100%', alignItems:'center', justifyContent:'space-around'}}>
                         <Button style={{width:'40%', height:'100%', display:'flex', alignItems:'center', flexDirection:'column', padding:'20px'}} variant="contained" onClick={onClickStudent}>
                             <Groups2TwoTone style={{marginBottom:'10px'}} />
                             <Typography style={{fontWeight:'bold', fontSize:'1.5vw'}} >學生</Typography>

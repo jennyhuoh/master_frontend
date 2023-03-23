@@ -15,6 +15,7 @@ import Home from './pages/home';
 import DiscussGroup from './pages/discussGroup';
 import GroupResult from './pages/groupResult';
 import MainRoom from './pages/mainRoom';
+import AddGroup from './pages/addGroup';
 // import KeycloakPage from './keycloak';
 
 const queryClient = new QueryClient()
@@ -32,6 +33,7 @@ export default function App() {
         <Route path='/discussGroup' element={<DiscussGroup />} />
         <Route path='/groupResult/:discussId' element={<Child />} />
         <Route path='/mainRoom/:roomId' element={<Child2 />} />
+        <Route path='/addGroup' element={<AddGroup />} />
       </Routes>
       <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>

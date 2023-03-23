@@ -33,6 +33,29 @@ instance.interceptors.response.use(
 
 // create or get a user
 export const createOrGetUser = data => instance.post('/user', data);
+// get all users
+export const getAllUsers = async() => {
+    const response = await instance.get('/users')
+    const data = await response.data;
+    var result = []
+    await Promise.all(data.map((user) => {
+        // console.log(user.id)
+        if(user.userName !== localStorage.getItem('userName')){
+            const transformedUser = {
+                value: user.id,
+                label: user.userName
+            }
+            result.push(transformedUser);
+        }
+    }))
+    return result;
+};
+// create a group
+export const createGroup = data => instance.post('/group', data);
+
+
+
+
 
 export const getVideoSDKAuthToken = data => instance.get('/get-token', data);
 export const postCreateMeetingId = async (token, data) => {
