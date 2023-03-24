@@ -3,6 +3,7 @@ import { styled, useTheme } from "@mui/material/styles";
 import { useKeycloak } from "@react-keycloak/web";
 import { Menu, ChevronLeft, ChevronRight, ExpandLess, ExpandMore } from "@mui/icons-material";
 import { useState } from 'react';
+import { useNavigate } from "react-router-dom";
 import AvatarGroup from 'react-avatar-group';
 
 const drawerWidth = 240;
@@ -22,6 +23,7 @@ export default function Header() {
     const [openHome, setOpenHome] = useState(true);
     const [openHistory, setOpenHistory] = useState(false);
     const { keycloak } = useKeycloak();
+    let navigate = useNavigate();
 
     const handleDrawerOpen = () => {
         setOpenDrawer(true);
@@ -43,6 +45,7 @@ export default function Header() {
         localStorage.setItem('userEmail', null);
         localStorage.setItem('userName', null);
         localStorage.setItem('role', null);
+        navigate('/')
     }
 
     return(

@@ -40,6 +40,7 @@ export default function AddGroup () {
         }
     }, [successOpen])
 
+    // 點擊建立Group btn
     const onClickCreateGroup = async () => {
         var members = [{id:localStorage.getItem('userId'), isOwner: true}];
         if((selectedMembers.length !== 0) && (groupName !== '')){

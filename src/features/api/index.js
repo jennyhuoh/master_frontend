@@ -58,6 +58,12 @@ export const getAllGroups = async (userId) => {
     const data = await response.data;
     return data;
 }
+// get a group info
+export const getGroupInfo = async(groupId) => {
+    const response = await instance.get(`/group/${groupId}`)
+    const data = await response.data;
+    return data;
+}
 
 
 
