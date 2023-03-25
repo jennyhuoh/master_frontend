@@ -40,12 +40,12 @@ export default function Header() {
         setOpenHistory(!openHistory);
     };
     const onClickLogout = () => {
+        navigate('/')
         keycloak.logout();
         localStorage.setItem('userId', null);
         localStorage.setItem('userEmail', null);
         localStorage.setItem('userName', null);
         localStorage.setItem('role', null);
-        navigate('/')
     }
 
     return(

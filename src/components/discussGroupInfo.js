@@ -1,4 +1,4 @@
-import { TextField, Box, Grid, Button, Paper, IconButton, CircularProgress } from "@mui/material";
+import { TextField, Box, Grid, Button, Paper, IconButton, CircularProgress, getSpeedDialIconUtilityClass } from "@mui/material";
 import { ArrowBackIosNew } from "@mui/icons-material";
 import { useState, useEffect } from 'react';
 import { DatePicker, LocalizationProvider, } from "@mui/x-date-pickers";
@@ -16,7 +16,12 @@ export default function DiscussGroupInfo(appProps) {
     getGroupInfo(groupId), {
         onSuccess:async () => {
             setGroupInfo(data)
-    }});
+        },
+        staleTime: Infinity
+    });
+    useEffect(() => {
+        setGroupInfo(data);
+    }, [data])
     const hostOption = (groupInfo!=undefined) ? [{value:groupInfo.owner.userEmail, label:groupInfo.owner.userName}] : []
     const memberOption = (groupInfo!=undefined) ? groupInfo.member : []
     const [groupEndTime, setGroupEndTime] = useState(dayjs().add(1, 'year').format('YYYY/MM/DD'));
