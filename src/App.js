@@ -16,6 +16,7 @@ import DiscussGroup from './pages/discussGroup';
 import GroupResult from './pages/groupResult';
 import MainRoom from './pages/mainRoom';
 import AddGroup from './pages/addGroup';
+import BlankPage from './components/blankPage';
 // import KeycloakPage from './keycloak';
 
 const queryClient = new QueryClient()
@@ -34,6 +35,7 @@ export default function App() {
         <Route path='/groupResult/:discussId' element={<Child />} />
         <Route path='/mainRoom/:roomId' element={<Child2 />} />
         <Route path='/addGroup' element={<AddGroup />} />
+        <Route path='/blankPage' element={<BlankPage />} />
       </Routes>
       <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>

@@ -15,7 +15,7 @@ export default function DiscussGroup(pageDiscussGroupProps) {
         <Box style={{backgroundColor:'#EEF1F4', padding:'0', margin:'0',}}>
             <Header />
             <DiscussGroupInfo groupId={pageDiscussGroupProps.groupId} />
-            <ListInGroup />
+            <ListInGroup groupId={pageDiscussGroupProps.groupId} />
             <div style={{backgroundColor:'#EEF1F4', height:'2vw'}}></div>
         </Box>
     );

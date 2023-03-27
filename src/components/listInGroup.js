@@ -5,8 +5,10 @@ import { v4 as uuid } from 'uuid';
 import { Add, AddCircleOutline } from '@mui/icons-material';
 import { DatePicker, LocalizationProvider, DateTimePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DndContext, closestCenter } from "@dnd-kit/core";
+import { arrayMove, SortableContext, horizontalListSortingStrategy } from "@dnd-kit/sortable";
+import { SortableItem } from "./sortableItem";
 import dayjs from 'dayjs';
-
 
 
 function createData(name, date) {
@@ -49,20 +51,40 @@ const Alerts = React.forwardRef((props, ref) => {
     return <Alert elevation={6} ref={ref} {...props} />
 })
 
-export default function ListInGroup() {
+
+
+export default function ListInGroup(appProps) {
+    console.log(appProps.groupId)
     const [displayAddForm, setDisplayAddForm] = useState(true);
     const [startTime, setStartTime] = useState();
     const [activityName, setActivityName] = useState('');
     const [addChildActOpen, setAddChildActOpen] = useState(false);
     const [alertName, setAlertName] = useState(false);
-    const [childActName, setChildActName] = useState();
+    const [childActName, setChildActName] = useState('');
     const [radioValue, setRadioValue] = useState('all');
+    const [alertContent, setAlertContent] = useState('請先填寫討論活動名稱以及開始時間');
+    const [stages, setStages] = useState([{id:1, content:'item1'}, {id:2, content:'item2'}, {id:3, content:'item3'},{id:4, content:'item4'},{id:4, content:'item4'}]);
+    
     let ref = React.createRef();
+    
+
+    
+
+    useEffect(() => {
+        if(childActName === '' && radioValue === 'group' ) {
+            setRadioValue('all')
+            setAlertContent('請先填寫活動名稱')
+            setAlertName(true)
+        }
+    }, [radioValue])
+
+    
 
     const onClickAddChildAct = () => {
         if(activityName!='') {
             setAddChildActOpen(true);
         } else {
+            setAlertContent('請先填寫討論活動名稱以及開始時間')
             setAlertName(true);
         }
         
@@ -73,6 +95,28 @@ export default function ListInGroup() {
         }
         setAlertName(false);
     }
+
+    const onClickFinishStage = () => {
+        if(childActName === '') {
+            setAlertContent('請先填寫活動名稱')
+            setAlertName(true)
+        } else {
+
+        }
+    }
+
+    function onDragEnd(event){
+        const {active, over} = event;
+        if(active.id !== over.id){
+            setStages((stages) => {
+                const activeIndex = stages.indexOf(active.id);
+                const overIndex = stages.indexOf(over.id);
+                console.log(arrayMove(stages, activeIndex, overIndex));
+                return arrayMove(stages, activeIndex, overIndex);
+            })
+        }
+    }
+
     if(true){
     return(
         <>
@@ -100,17 +144,20 @@ export default function ListInGroup() {
                             </Grid>
                         </Grid>
                         <Grid container spacing={20} style={{padding:'0 20px'}}>
-                            <Grid item xs={12} sx={{marginTop:'30px'}}>
+                            <Grid item xs={2} sx={{marginTop:'30px'}}>
                                 <p style={{color:'grey', fontSize:'4px', marginBottom:'10px'}}>3.活動規劃</p>
-                            <Button variant="contained" color="secondary" style={{width: 180, height: 120, borderRadius:'5px', display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', border:'1.5px #BEBEBE dashed'}} onClick={onClickAddChildAct}>
-                                <AddCircleOutline color="disabled" style={{fontSize:'55px', marginBottom:'8px'}} />
-                                <Typography color="gray" sx={{fontSize:'4px'}}>新增活動</Typography>
-                            </Button> 
+                                <Button variant="contained" color="secondary" style={{width: 180, height: 120, borderRadius:'5px', display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', border:'1.5px #BEBEBE dashed'}} onClick={onClickAddChildAct}>
+                                    <AddCircleOutline color="disabled" style={{fontSize:'55px', marginBottom:'8px'}} />
+                                    <Typography color="gray" sx={{fontSize:'4px'}}>新增活動</Typography>
+                                </Button>
                             </Grid> 
+                            <Grid item xs={10} sx={{marginTop:'30px'}}>
+                               
+                            </Grid>
                         </Grid>
                         <Grid container spacing={20} style={{padding:'0 20px'}}>
                             <Grid item xs={12} sx={{marginTop:'50px', display:'flex', justifyContent:'flex-end'}}>
-                                <Button variant="contained" color='secondary' style={{fontWeight:'bold'}}>取消</Button> 
+                                <Button component={Link} to="/blankPage" variant="contained" color='secondary' style={{fontWeight:'bold'}}>取消</Button> 
                                 <Button variant="contained" style={{fontWeight:'bold', marginLeft:'15px'}}>完成</Button>
                             </Grid>
                         </Grid>
@@ -144,7 +191,7 @@ export default function ListInGroup() {
             </Box>
             <Snackbar open={alertName} autoHideDuration={6000} onClose={onCloseAlert}>
                 <Alerts ref={ref} onClose={onCloseAlert} severity="error"sx={{width:'28vw'}}>
-                    需先填寫討論活動名稱
+                    {alertContent} 
                 </Alerts>
             </Snackbar>
             <Modal
@@ -179,7 +226,7 @@ export default function ListInGroup() {
                             </Box>
                         </Box>
                         <Box style={{display:'flex', justifyContent:'flex-end', marginTop:'30px'}}>
-                            <Button variant="contained" style={{fontWeight:'bold', marginLeft:'15px'}}>完成</Button> 
+                            <Button variant="contained" style={{fontWeight:'bold', marginLeft:'15px'}} onClick={onClickFinishStage}>完成</Button> 
                         </Box>
                     </Box>
                 </Box>
