@@ -53,16 +53,16 @@ export default function Login() {
             </>
             :
             <Box style={{width:'100vw', height:'100vh', display:'flex', justifyContent:'center', alignItems:'center'}} sx={{backgroundColor:'#2B3143'}}>
-                <Box style={{width:'35%', height:'34%', backgroundColor:'white', fontSize:'2.6vw', fontWeight:'semi-bold', borderRadius:'10px', padding:'40px', display:'flex', alignItems:'center', flexDirection:'column', marginTop:0}}>
+                <Box style={{width:'40%', height:'42%', backgroundColor:'white', fontSize:'2.6vw', fontWeight:'semi-bold', borderRadius:'10px', padding:'40px', display:'flex', alignItems:'center', flexDirection:'column', marginTop:0}}>
                     登入身份
-                    <Box style={{display:'flex', marginTop:'60px', width:'100%', alignItems:'center', justifyContent:'space-around'}}>
+                    <Box style={{display:'flex', marginTop:'60px', width:'100%', height:'46%', alignItems:'center', justifyContent:'space-around'}}>
                         <Button style={{width:'40%', height:'100%', display:'flex', alignItems:'center', flexDirection:'column', padding:'20px'}} variant="contained" onClick={onClickStudent}>
-                            <Groups2TwoTone style={{marginBottom:'10px'}} />
-                            <Typography style={{fontWeight:'bold', fontSize:'1.5vw'}} >學生</Typography>
+                            <Groups2TwoTone style={{fontSize:'2.6vw'}} />
+                            <Typography style={{fontWeight:'bold', fontSize:'1.8vw'}} >學生</Typography>
                         </Button>
                         <Button style={{width:'40%', height:'100%', display:'flex', alignItems:'center', flexDirection:'column', padding:'20px'}} variant="contained" onClick={onClickTeacher}>
-                            <PersonOutlineTwoTone />
-                            <Typography style={{fontWeight:'bold', fontSize:'1.5vw'}} >老師</Typography>
+                            <PersonOutlineTwoTone style={{fontSize:'2.6vw'}} />
+                            <Typography style={{fontWeight:'bold', fontSize:'1.8vw'}} >老師</Typography>
                         </Button>
                     </Box>
                 </Box>

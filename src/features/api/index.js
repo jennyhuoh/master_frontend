@@ -64,6 +64,22 @@ export const getGroupInfo = async(groupId) => {
     const data = await response.data;
     return data;
 }
+// create a stage
+export const createStage = async (data) => {
+    const response = await instance.post('/stage', data)
+    const datas = await response.data;
+    return datas;
+};
+// Delete a stage
+export const deleteStage = (id, data) => instance.delete(`/stage/${id}`, data);
+// Update a group
+export const updateGroup = (id, data) => instance.post(`/group/${id}`, data);
+// Save stages sequence
+export const saveStagesSequence = (data) => instance.post('/stages', data);
+
+
+
+
 
 
 

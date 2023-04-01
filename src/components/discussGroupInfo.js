@@ -1,13 +1,18 @@
-import { TextField, Box, Grid, Button, Paper, IconButton, CircularProgress, getSpeedDialIconUtilityClass } from "@mui/material";
+import { TextField, Box, Grid, Button, Paper, IconButton, CircularProgress, Divider, Alert, Snackbar } from "@mui/material";
 import { ArrowBackIosNew } from "@mui/icons-material";
-import { useState, useEffect } from 'react';
+import React,{ useState, useEffect } from 'react';
 import { DatePicker, LocalizationProvider, } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { Link } from "react-router-dom";
-import { useQuery } from 'react-query';
-import { getGroupInfo } from "../features/api";
+import { useQuery, useMutation } from 'react-query';
+import { getGroupInfo, updateGroup } from "../features/api";
 import dayjs from "dayjs";
 import Select from 'react-select';
+import { isSVGElement } from "@dnd-kit/utilities";
+
+const Alerts = React.forwardRef((props, ref) => {
+    return <Alert elevation={6} ref={ref} {...props} />
+})
 
 export default function DiscussGroupInfo(appProps) {
     const [groupInfo, setGroupInfo] = useState(undefined);
@@ -21,18 +26,53 @@ export default function DiscussGroupInfo(appProps) {
     });
     useEffect(() => {
         setGroupInfo(data);
+        
     }, [data])
+
     const hostOption = (groupInfo!=undefined) ? [{value:groupInfo.owner.userEmail, label:groupInfo.owner.userName}] : []
-    const memberOption = (groupInfo!=undefined) ? groupInfo.member : []
+    const memberOption = (groupInfo!=undefined) ? groupInfo.all : []
+    const defaultOption = (groupInfo!=undefined) ? groupInfo.member : [] 
     const [groupEndTime, setGroupEndTime] = useState(dayjs().add(1, 'year').format('YYYY/MM/DD'));
+    const [alertOpen, setAlertOpen] = useState(false);
+    const {mutate} = useMutation(updateGroup, {
+        onSuccess: () => {
+            setAlertOpen(true)
+            localStorage.setItem('usersNum', selectedMembers.length)
+            localStorage.setItem('usersInGroup', JSON.stringify(selectedMembers))
+        }
+    })
+    const [selectedMembers, setSelectedMembers] = useState(defaultOption);
+    let ref = React.createRef();
+    useEffect(() => {
+        if(groupInfo != undefined) {
+            localStorage.setItem('usersNum', groupInfo.all.length);
+            localStorage.setItem('usersInGroup', JSON.stringify(groupInfo.member));
+        }
+    }, [groupInfo])
+    const onClickSaveInfo = () => {
+        const data = {
+            members: selectedMembers
+        }
+        mutate(data)
+    }
+
+    const onCloseAlert = (event, reason) => {
+        if(reason === 'clickaway') {
+            return;
+        }
+        setAlertOpen(false);
+    }
 
     // 是否為管理者
     if(groupInfo!=undefined) {
         return(
+            <>
             <Box m={'0 3vw 2vw 3vw'} sx={{pt:'12vh'}}>
                 <IconButton style={{color:'black', marginBottom:'5px'}} component={Link} to='/home'><ArrowBackIosNew sx={{fontSize:'1.5vw'}} /></IconButton><span style={{fontWeight:'bold', fontSize:'2vw', marginLeft:'10px'}}>{groupInfo.groupName}</span>
                 {/* 群組資訊 */}
-                <Paper style={{marginTop:'15px', backgroundColor:'white', padding:'2vw'}}>
+                <Paper style={{marginTop:'15px', backgroundColor:'white', padding:'2vw', borderRadius:'10px'}}>
+                    <div style={{fontWeight:'bold', fontSize:'1.5vw'}}>基本資訊</div>
+                    <Divider style={{margin:'15px 0', borderColor:'#707070'}}/>
                     <Grid container spacing={20} style={{padding:'0 20px'}}>
                         <Grid item xs={6}>
                             <TextField style={{width:'35vw', marginTop:'10px'}} InputLabelProps={{shrink:true,}} variant="standard" label="1.群組名稱" color="warning" value={groupInfo.groupName} />
@@ -63,18 +103,24 @@ export default function DiscussGroupInfo(appProps) {
                             <p style={{color:'grey', fontSize:'4px'}}>4.參與討論成員</p>
                             <Select
                              options={memberOption}
-                             defaultValue={memberOption}
+                             defaultValue={defaultOption}
                              isMulti    
-                            //  onChange={(values) => setSelectedMembers(values)}
+                             onChange={(values) => setSelectedMembers(values)}
                             />
                         </Grid>
                     </Grid>
                     <Box style={{display:'flex', justifyContent:'flex-end', paddingRight:'20px'}}>
                         <Button variant="outlined" color='error'>刪除</Button>
-                        {/* <Button variant="contained" color='primary' style={{marginLeft:'20px'}}>儲存更改</Button> */}
+                        <Button variant="contained" color='primary' style={{marginLeft:'20px', fontWeight:'bold'}} onClick={onClickSaveInfo}>儲存更改</Button>
                     </Box>
                 </Paper>
             </Box>
+            <Snackbar open={alertOpen} autoHideDuration={6000} onClose={onCloseAlert}>
+                <Alerts ref={ref} onClose={onCloseAlert} severity="success"sx={{width:'28vw'}}>
+                    儲存成功! 
+                </Alerts>
+            </Snackbar>
+            </>
         );
     } else {
         return(

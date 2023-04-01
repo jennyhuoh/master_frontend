@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { MoreHoriz, AddCircleOutline, Event, People } from "@mui/icons-material";
 import { getAllGroups } from "../features/api/index.js";
 import { useQuery } from "react-query";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AvatarGroup from 'react-avatar-group';
 
 const Groups = (props) => {
@@ -11,6 +11,8 @@ const Groups = (props) => {
     const a = props.members.map((member) => {
         memberArr.push(member.userName);
     })
+
+
     
     return(
         <Card sx={{ width: 200, height: 130, borderRadius:'5px',padding:'10px' }}>
@@ -25,7 +27,7 @@ const Groups = (props) => {
                     <Grid item xs={2} style={{marginTop:'-5px'}}><IconButton size="small" component={Link} to={`/group/${props.meetingId}`}><MoreHoriz sx={{color:'grey'}} /></IconButton></Grid>
                 </Grid>
                 <Box sx={{mb:1, mt:1}} style={{display:'flex'}}>
-                    <People sx={{color:'grey', mr:1.5}} fontSize="small"  />
+                    <People sx={{color:'grey', mr:1.5, mt:0.5}} fontSize="small"  />
                     <AvatarGroup
                         avatars={memberArr}
                         initialCharacters={2}
@@ -57,6 +59,9 @@ export default function GroupsInHome() {
     if(groups!=undefined) {
         num = ((groups.length%2)!==0) ? (groups.length+1)/2 : groups.length/2;
     }
+    useEffect(() => {
+        setGroups(data)
+    }, [data])
     // console.log(groups)
     // console.log(localStorage.getItem('role') === 'teacher');
     if(!isLoading) {
