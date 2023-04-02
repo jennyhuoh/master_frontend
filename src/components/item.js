@@ -3,12 +3,12 @@ import { Box, Button, Modal, Typography } from '@mui/material';
 import { DragHandle, DeleteOutline } from "@mui/icons-material";
 import { useMutation } from "react-query";
 import { deleteStage } from "../features/api";
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import context from '../context';
 
 export const Item = forwardRef(({id, listeners, attributes, style, ...props}, ref) => {
   const [alertModalOpen, setAlertModalOpen] = useState(false);
-  const { deleteAStage } = useContext(context);
+  const { deleteAStage, getTeamsBtn } = useContext(context);
   const {mutate} = useMutation(deleteStage);
 // console.log('s', stages)
   const onClickDeleteStage = () => {
@@ -20,16 +20,19 @@ export const Item = forwardRef(({id, listeners, attributes, style, ...props}, re
   return (
     <>
       <div {...props} ref={ref}>
-          <Box style={{width: '170px', height: '120px', borderRadius:'5px', margin:'0 8px 5px 8px', border:'2px solid rgba(0,0,0,0.2)', boxShadow:'1px 1px 3px 1px rgba(0,0,0,0.1)'}}>
-              <DragHandle {...props} {...listeners} color="disabled" style={{marginTop:'-3px'}} />
-              <Typography sx={{ml:'-70px', fontSize:'14px', fontWeight:'bold'}}>
+          <Box style={{width: '170px', height: '120px', borderRadius:'5px', margin:'0 8px 5px 8px', border:'2px solid rgba(0,0,0,0.2)', boxShadow:'1px 1px 3px 1px rgba(0,0,0,0.1)', display:'grid'}}>
+              <DragHandle {...props} {...listeners} color="disabled" style={{marginTop:'-3px', justifySelf:'center'}} />
+              <Typography sx={{ml:'14px', fontSize:'14px', fontWeight:'bold', justifySelf:'flex-start'}}>
                   {props.order}. {props.name}
               </Typography>
-            {(props.grouping !== false) ? 
-              <Typography sx={{ml:'-80px', fontSize:'16px', fontWeight:'bold', mt:'8px'}}>● <span style={{fontSize:'12px'}}>分組討論</span></Typography> :
-              <Typography sx={{ml:'-80px', fontSize:'16px', fontWeight:'bold', mt:'8px'}}>● <span style={{fontSize:'12px'}}>全體討論</span></Typography> 
+              {(props.grouping !== 'false') ? 
+              <div style={{display:'flex'}}>
+                <Typography sx={{justifySelf:'flex-start', fontSize:'16px', fontWeight:'bold', ml:'14px'}}>● <span style={{fontSize:'12px'}}>分組討論</span></Typography>
+                <Button sx={{height:'28px'}} size="small" variant="contained" color="secondary" style={{marginLeft:'12px'}} onClick={() => {getTeamsBtn(id)}}>查看分組</Button>
+              </div> :
+              <Typography sx={{ml:'14px', fontSize:'16px', fontWeight:'bold', justifySelf:'flex-start'}}>● <span style={{fontSize:'12px'}}>全體討論</span></Typography> 
               }
-              <Button variant="outlined" color="error" style={{maxWidth:'25px', maxHeight:'25px', minWidth:'25px', minHeight:'25px', marginLeft:'110px', marginTop:'8px'}} onClick={onClickDeleteStage}>
+              <Button variant="outlined" color="error" style={{maxWidth:'25px', maxHeight:'25px', minWidth:'25px', minHeight:'25px', justifySelf:'flex-end', marginRight:'14px'}} onClick={onClickDeleteStage}>
                   <DeleteOutline sx={{fontSize:20}} />
               </Button>
           </Box>

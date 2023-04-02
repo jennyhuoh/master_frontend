@@ -76,6 +76,31 @@ export const deleteStage = (id, data) => instance.delete(`/stage/${id}`, data);
 export const updateGroup = (id, data) => instance.post(`/group/${id}`, data);
 // Save stages sequence
 export const saveStagesSequence = (data) => instance.post('/stages', data);
+// Create new teams in a stage
+export const createTeams = async ({id, teams}) => {
+    const response = await instance.post(`/stage/${id}/teams`, teams);
+    const data = await response.data;
+    return data;
+}
+// get teams for a stage
+export const getTeams = async (id) => {
+    const response = await instance.get(`/stage/${id}/teams`);
+    const data = await response.data;
+    const teams = await data.teams;
+    return teams;
+}
+// Create a new activity
+export const createActivity = async ({id, activity}) => {
+    const response = await instance.post(`/group/${id}/activity`, activity);
+    const data = await response.data;
+    return data;
+}
+// Get activities from a group
+export const getActivities = async (id) => {
+    const response = await instance.get(`/group/${id}/activities`);
+    const data = await response.data;
+    return data
+}
 
 
 

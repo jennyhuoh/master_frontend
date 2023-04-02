@@ -8,8 +8,8 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DndContext, closestCenter, DragOverlay, MeasuringStrategy, useDraggable, useSensors, useSensor, PointerSensor, closestCorners } from "@dnd-kit/core";
 import { arrayMove, SortableContext, horizontalListSortingStrategy } from "@dnd-kit/sortable";
 import { SortableItem } from "./sortableItem";
-import { useMutation } from 'react-query';
-import { createStage, saveStagesSequence } from "../features/api";
+import { useMutation, useQuery } from 'react-query';
+import { createStage, saveStagesSequence, createTeams, deleteStage, getTeams, createActivity, getActivities } from "../features/api";
 import { Item } from './item';
 import { Provider } from '../context';
 import { restrictToHorizontalAxis, restrictToWindowEdges } from "@dnd-kit/modifiers";
@@ -22,13 +22,13 @@ function createData(name, date) {
   return { name, date };
 }
 
-const rows = [
-  createData('Frozen yoghurt', 159),
-  createData('Ice cream sandwich', 237),
-  createData('Eclair', 262,),
-  createData('Cupcake', 305),
-  createData('Gingerbread', 356),
-];
+// const rows = [
+//   createData('Frozen yoghurt', 159),
+//   createData('Ice cream sandwich', 237),
+//   createData('Eclair', 262,),
+//   createData('Cupcake', 305),
+//   createData('Gingerbread', 356),
+// ];
 const Rows = (props) => {
     const id = uuid();
     return(
@@ -38,9 +38,9 @@ const Rows = (props) => {
     sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
     >
         <TableCell style={{width:'38%', verticalAlign:'baseline'}} component="th" scope="row">
-            {props.row.name}
+            {props.row.activityName}
         </TableCell>
-        <TableCell style={{width:'35%', verticalAlign:'baseline'}} align="center">{props.row.date}</TableCell>
+        <TableCell style={{width:'35%', verticalAlign:'baseline'}} align="center">{props.row.activityStartDate}</TableCell>
         <TableCell style={{width:'17%', verticalAlign:'baseline'}} align="right">
             <Button variant="contained" component={Link} to={'/mainRoom/'+id}>開始討論</Button>
         </TableCell>
@@ -65,6 +65,7 @@ const measuringConfig = {
 }
 
 export default function ListInGroup(appProps) {
+    const groupId = appProps.groupId;
     // console.log(appProps.groupId)
     const [displayAddForm, setDisplayAddForm] = useState(false);
     const [startTime, setStartTime] = useState();
@@ -84,11 +85,25 @@ export default function ListInGroup(appProps) {
     })
     const [flag, setFlag] = useState(true);
     const [groupResultOpen, setGroupResultOpen] = useState(false);
+    const [checkResult, setCheckResult] = useState(false);
+    const [nowGroup, setNowGroup] = useState(null);
+    const [successAlertOpen, setSuccessAlertOpen] = useState(false);
     let ref = React.createRef();
-    
+    const [rows, setRows] = useState(undefined)
+    const {data, isLoading} = useQuery(['lists', groupId], () =>
+    getActivities(groupId), {
+        onSuccess: () => {
+            setRows(data)
+            
+        }
+    })
+    useEffect(() => {
+        setRows(data)
+        console.log('data', data)
+    }, [data])
     useEffect(() => {
         setFlag(false)
-        setGroupItems({main: JSON.parse(localStorage.getItem('usersInGroup')),})
+        setGroupItems({main: JSON.parse(localStorage.getItem('usersInGroup'))})
     }, [groupNum])
 
     useEffect(() => {
@@ -139,7 +154,27 @@ export default function ListInGroup(appProps) {
             console.log('data', data)
         }
     })
-    
+    const {mutate: mutateTeams} = useMutation(createTeams, {
+        onSuccess: () => {
+            setGroupModalOpen(false)
+            setGroupResultOpen(false)
+            setAddChildActOpen(false)
+            setGroupItems({main: JSON.parse(localStorage.getItem('usersInGroup'))})
+        }
+    })
+    const {mutate: mutateDelete} = useMutation(deleteStage)
+    const {mutate: mutateGetTeams} = useMutation(getTeams, {
+        onSuccess: (data) => {
+            console.log('team', data)
+            setNowGroup(data)
+        }
+    })
+    const {mutate: mutateActivity} = useMutation(createActivity, {
+        onSuccess: () => {
+            setDisplayAddForm(false)
+            setSuccessAlertOpen(true);
+        }
+    })
 
     useEffect(() => {
         if(childActName === '' && radioValue === 'group' ) {
@@ -155,6 +190,15 @@ export default function ListInGroup(appProps) {
     const onClickAddChildAct = () => {
         if(activityName!=='') {
             setAddChildActOpen(true);
+            setGroupNum(Math.floor(localStorage.getItem('usersNum')/3))
+            for(let i = 1; i <= groupNum; i++) {
+                const a = 'container'+i;
+                groupItems[a] = []
+                setGroupItems({...groupItems})
+                setFlag(true)
+            } 
+            console.log('num', groupNum);
+            console.log('item', groupItems);
         } else {
             setAlertContent('請先填寫討論活動名稱以及開始時間')
             setAlertName(true);
@@ -166,6 +210,7 @@ export default function ListInGroup(appProps) {
             return;
         }
         setAlertName(false);
+        setSuccessAlertOpen(false);
     }
 
     const onClickFinishStage = () => {
@@ -188,9 +233,13 @@ export default function ListInGroup(appProps) {
     const deleteAStage = (id) => {
         const result = stages.filter(stage => stage.id !== id);
         setStages(result);
-        // console.log('deleted', result);
+        mutateDelete(id);
     }
-    const contextValue = {deleteAStage};
+    const getTeamsBtn = (id) => {
+        mutateGetTeams(id)
+        setCheckResult(true)
+    }
+    const contextValue = {deleteAStage, getTeamsBtn};
 
     function handleDragEnd(event) {
         // console.log("Drag end called");
@@ -222,7 +271,7 @@ export default function ListInGroup(appProps) {
 
     function handleDragOver(event) {
         console.log('start drag over')
-        const { active, over, draggingRect } = event;
+        const { active, over } = event;
         const { id } = active;
         const { id: overId } = over
         console.log('active', id);
@@ -330,6 +379,7 @@ export default function ListInGroup(appProps) {
     }
 
     const onClickSaveGroup = () => {
+        console.log('save', groupItems)
         if(groupItems['main'].length === 0) {
             const stage = {
                 stageName: childActName,
@@ -341,6 +391,7 @@ export default function ListInGroup(appProps) {
             // setAddChildActOpen(false);
             setChildActName('');
             setGroupResultOpen(true);
+            console.log('stages', stages)
         } else {
             setAlertContent('組員尚未分配完成')
             setAlertName(true);
@@ -361,7 +412,6 @@ export default function ListInGroup(appProps) {
         }
         const containerStyle = {
             background: "#5A81A8",
-            // padding: 5,
             margin: 10,
             minHeight: '65px',
             display: 'flex',
@@ -427,11 +477,44 @@ export default function ListInGroup(appProps) {
             </React.Fragment>
         );
     }
-    const onCloseResultModal = () => {
-        setGroupModalOpen(false)
-        setGroupResultOpen(false)
-        setAddChildActOpen(false)
+    const onCloseResultModal = async () => {
+        var teams = []
+        let stageId = stages[stages.length-1].id;
+        console.log('stageid', stageId)
+        await Promise.all(Object.keys(groupItems).map((key, index) => {
+            if(key !== 'main') {
+                const team = {
+                    teamName: `${index}`,
+                    teamOrder: index,
+                    teamMembers: groupItems[key]
+                }
+                teams.push(team);
+            }
+        }))
+        console.log('teams', teams)
+        mutateTeams({
+            teams: teams,
+            id: stageId
+        })
     } 
+
+    const GroupResult = (props) => {
+        return(
+            <TableRow
+            sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+            >
+                <TableCell style={{width:'20%', verticalAlign:'baseline'}} component="th" scope="row">
+                    {props.groupName}
+                </TableCell>
+                <TableCell style={{width:'80%', verticalAlign:'baseline', display:'flex'}}>
+                    {props.members.map((member) => {
+                        return <div key={member.id} style={{padding:'7px 2px', margin:'2px', display:'flex', border:'2px solid black', borderRadius:'5px', width:'60px',justifyContent:'center', alignItems:'center', fontWeight:'bold'}}>{member.label}</div>
+                    })}
+                </TableCell>
+            </TableRow> 
+        );
+    }
+
     function ResultModal() {
         return(
             <React.Fragment>
@@ -440,10 +523,27 @@ export default function ListInGroup(appProps) {
                 onClose={onCloseResultModal}
             >
                 <Box style={{position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 800, backgroundColor: 'white', boxShadow: 24, padding:'20px 25px', borderRadius:'5px', display:'flex', flexDirection:'column', alignItems:'center'}}>
-                 
-                    <Box style={{display:'flex', marginLeft:'620px', marginTop:'10px'}}>
-                        <Button variant="contained" color='secondary' style={{fontWeight:'bold'}}>取消</Button> 
-                        <Button variant="contained" style={{fontWeight:'bold', marginLeft:'15px'}}>儲存分組</Button> 
+                    <TableContainer>
+                        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+                            <TableHead>
+                            <TableRow>
+                                <TableCell style={{width:'20%', padding:0}}>小組</TableCell>
+                                <TableCell style={{width:'80%'}}>成員</TableCell>
+                            </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {Object.keys(groupItems).map((key, index) => {
+                                    if(key !== 'main'){
+                                        return(
+                                        <GroupResult key={key} groupName={index} members={groupItems[key]} />
+                                        )
+                                    }
+                                })}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                    <Box style={{display:'flex', marginLeft:'670px', marginTop:'10px'}}>
+                        <Button variant="contained" color='secondary' style={{fontWeight:'bold'}} onClick={onCloseResultModal}>完成</Button> 
                     </Box>
                 </Box>
             </Modal>
@@ -454,7 +554,20 @@ export default function ListInGroup(appProps) {
         setGroupNum(Math.floor(localStorage.getItem('usersNum')/3))
         setRadioValue(e.target.value)
     }
-    if(true){
+    const finishAddForm = () => {
+        const data = {
+            activityName: activityName,
+            activityStartDate: `${startTime}`,
+            stageId: stages
+        }
+        console.log('data', data)
+        mutateActivity({
+            id: appProps.groupId,
+            activity: data
+        })
+    }
+
+    if(rows !== undefined){
     return(
         <Provider value={contextValue}>
             {displayAddForm && (
@@ -511,7 +624,7 @@ export default function ListInGroup(appProps) {
                         <Grid container spacing={20} style={{padding:'0 20px'}}>
                             <Grid item xs={12} sx={{marginTop:'50px', display:'flex', justifyContent:'flex-end'}}>
                                 <Button onClick={() => setDisplayAddForm(false)} variant="contained" color='secondary' style={{fontWeight:'bold'}}>取消</Button> 
-                                <Button variant="contained" style={{fontWeight:'bold', marginLeft:'15px'}}>完成</Button>
+                                <Button variant="contained" style={{fontWeight:'bold', marginLeft:'15px'}} onClick={finishAddForm}>完成</Button>
                             </Grid>
                         </Grid>
                     </Paper>
@@ -536,7 +649,7 @@ export default function ListInGroup(appProps) {
                         </TableRow>
                         </TableHead>
                         <TableBody>
-                            {rows.map((row) => <Rows row={row} key={row.name} />)}
+                            {rows?.map((row) => <Rows row={row} key={row.id} />)}
                         </TableBody>
                     </Table>
                 </TableContainer>
@@ -545,6 +658,11 @@ export default function ListInGroup(appProps) {
             <Snackbar open={alertName} autoHideDuration={6000} onClose={onCloseAlert}>
                 <Alerts ref={ref} onClose={onCloseAlert} severity="error"sx={{width:'28vw'}}>
                     {alertContent} 
+                </Alerts>
+            </Snackbar>
+            <Snackbar open={successAlertOpen} autoHideDuration={6000} onClose={onCloseAlert}>
+                <Alerts ref={ref} onClose={onCloseAlert} severity="success"sx={{width:'28vw'}}>
+                    成功新增!
                 </Alerts>
             </Snackbar>
             <Modal
@@ -583,6 +701,37 @@ export default function ListInGroup(appProps) {
                         </Box>
                     </Box>
                     <ChildModal />
+                </Box>
+            </Modal>
+            <Modal
+                open={checkResult}
+                onClose={() => {
+                    setCheckResult(false)
+                    setNowGroup(null)
+                }}
+            >
+                <Box style={{position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 800, backgroundColor: 'white', boxShadow: 24, padding:'20px 25px', borderRadius:'5px', display:'flex', flexDirection:'column', alignItems:'center'}}>
+                    <TableContainer>
+                        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+                            <TableHead>
+                            <TableRow>
+                                <TableCell style={{width:'20%', padding:0}}>小組</TableCell>
+                                <TableCell style={{width:'80%'}}>成員</TableCell>
+                            </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {nowGroup && nowGroup.map((group) => {
+                                    return(
+                                        <GroupResult key={group.id} groupName={group.teamName} members={group.teamMembers} />
+                                    );
+                                })}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                    <Button variant="contained" color='secondary' style={{fontWeight:'bold', marginLeft:'710px', marginBottom:'10px'}} onClick={() => {
+                        setCheckResult(false)
+                        setNowGroup(null)    
+                    }}>完成</Button> 
                 </Box>
             </Modal>
         </Provider>

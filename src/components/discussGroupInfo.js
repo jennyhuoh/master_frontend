@@ -5,7 +5,7 @@ import { DatePicker, LocalizationProvider, } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation } from 'react-query';
-import { getGroupInfo, updateGroup } from "../features/api";
+import { getActivities, getGroupInfo, updateGroup } from "../features/api";
 import dayjs from "dayjs";
 import Select from 'react-select';
 import { isSVGElement } from "@dnd-kit/utilities";
@@ -45,7 +45,7 @@ export default function DiscussGroupInfo(appProps) {
     let ref = React.createRef();
     useEffect(() => {
         if(groupInfo != undefined) {
-            localStorage.setItem('usersNum', groupInfo.all.length);
+            localStorage.setItem('usersNum', groupInfo.member.length);
             localStorage.setItem('usersInGroup', JSON.stringify(groupInfo.member));
         }
     }, [groupInfo])

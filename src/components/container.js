@@ -7,7 +7,6 @@ import GroupSortableItem from "./groupSortableItem";
 
 export default function Container(props) {
     const { id, items } = props;
-    console.log(items)
   const { setNodeRef } = useDroppable({
     id
   });
