@@ -1,14 +1,13 @@
-import { TextField, Box, Grid, Button, Paper, IconButton, CircularProgress, Divider, Alert, Snackbar } from "@mui/material";
+import { TextField, Box, Grid, Button, Paper, IconButton, CircularProgress, Divider, Alert, Snackbar, Modal } from "@mui/material";
 import { ArrowBackIosNew } from "@mui/icons-material";
 import React,{ useState, useEffect } from 'react';
 import { DatePicker, LocalizationProvider, } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from 'react-query';
-import { getActivities, getGroupInfo, updateGroup } from "../features/api";
+import { getGroupInfo, updateGroup, deleteGroup } from "../features/api";
 import dayjs from "dayjs";
 import Select from 'react-select';
-import { isSVGElement } from "@dnd-kit/utilities";
 
 const Alerts = React.forwardRef((props, ref) => {
     return <Alert elevation={6} ref={ref} {...props} />
@@ -34,11 +33,18 @@ export default function DiscussGroupInfo(appProps) {
     const defaultOption = (groupInfo!=undefined) ? groupInfo.member : [] 
     const [groupEndTime, setGroupEndTime] = useState(dayjs().add(1, 'year').format('YYYY/MM/DD'));
     const [alertOpen, setAlertOpen] = useState(false);
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    let navigate = useNavigate();
     const {mutate} = useMutation(updateGroup, {
         onSuccess: () => {
             setAlertOpen(true)
             localStorage.setItem('usersNum', selectedMembers.length)
             localStorage.setItem('usersInGroup', JSON.stringify(selectedMembers))
+        }
+    })
+    const {mutate: mutateDelete} = useMutation(deleteGroup, {
+        onSuccess: () => {
+            navigate('/home');
         }
     })
     const [selectedMembers, setSelectedMembers] = useState(defaultOption);
@@ -53,9 +59,11 @@ export default function DiscussGroupInfo(appProps) {
         const data = {
             members: selectedMembers
         }
-        mutate(data)
+        mutate({
+            id: appProps.groupId,
+            groupInfo: data
+        })
     }
-
     const onCloseAlert = (event, reason) => {
         if(reason === 'clickaway') {
             return;
@@ -110,7 +118,7 @@ export default function DiscussGroupInfo(appProps) {
                         </Grid>
                     </Grid>
                     <Box style={{display:'flex', justifyContent:'flex-end', paddingRight:'20px'}}>
-                        <Button variant="outlined" color='error'>刪除</Button>
+                        <Button variant="outlined" color='error' onClick={() => {setDeleteModalOpen(true)}}>刪除</Button>
                         <Button variant="contained" color='primary' style={{marginLeft:'20px', fontWeight:'bold'}} onClick={onClickSaveInfo}>儲存更改</Button>
                     </Box>
                 </Paper>
@@ -120,6 +128,18 @@ export default function DiscussGroupInfo(appProps) {
                     儲存成功! 
                 </Alerts>
             </Snackbar>
+            <Modal
+            open={deleteModalOpen}
+            onClose={() => setDeleteModalOpen(false)}
+            >
+                <Box style={{position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 260, backgroundColor: 'white', boxShadow: 24, padding:'20px 25px', borderRadius:'5px'}}>
+                    請問確定要刪除此討論活動群組嗎?
+                    <Box style={{display:'flex', marginTop:'25px', justifyContent:'flex-end'}}>
+                        <Button variant="outlined" color="error" style={{fontWeight:'bold'}} onClick={() => {mutateDelete(appProps.groupId)}}>確定</Button>
+                        <Button variant="contained" color="secondary" style={{fontWeight:'bold', marginLeft:'12px'}} onClick={() => setDeleteModalOpen(false)}>取消</Button>
+                    </Box>
+                </Box>
+            </Modal>
             </>
         );
     } else {

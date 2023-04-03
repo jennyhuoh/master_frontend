@@ -1,5 +1,5 @@
 import { Box, Divider, Paper, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Button, Grid, TextField, Typography, Alert, Snackbar, Modal, Radio, IconButton } from "@mui/material";
-import React,{ useEffect, useState } from "react";
+import React,{ useEffect, useState, useContext } from "react";
 import { Link } from "react-router-dom";
 import { v4 as uuid } from 'uuid';
 import { Add, AddCircleOutline, AddCircle, RemoveCircle } from '@mui/icons-material';
@@ -9,48 +9,60 @@ import { DndContext, closestCenter, DragOverlay, MeasuringStrategy, useDraggable
 import { arrayMove, SortableContext, horizontalListSortingStrategy } from "@dnd-kit/sortable";
 import { SortableItem } from "./sortableItem";
 import { useMutation, useQuery } from 'react-query';
-import { createStage, saveStagesSequence, createTeams, deleteStage, getTeams, createActivity, getActivities } from "../features/api";
+import { createStage, saveStagesSequence, createTeams, deleteStage, getTeams, createActivity, getActivities, deleteActivity } from "../features/api";
 import { Item } from './item';
-import { Provider } from '../context';
+import context,{ Provider } from '../context';
 import { restrictToHorizontalAxis, restrictToWindowEdges } from "@dnd-kit/modifiers";
 import { GroupItem } from './groupSortableItem';
 import dayjs from 'dayjs';
 import Container from './container';
 
-
-function createData(name, date) {
-  return { name, date };
-}
-
-// const rows = [
-//   createData('Frozen yoghurt', 159),
-//   createData('Ice cream sandwich', 237),
-//   createData('Eclair', 262,),
-//   createData('Cupcake', 305),
-//   createData('Gingerbread', 356),
-// ];
 const Rows = (props) => {
-    const id = uuid();
+    // const id = uuid();
+    const [alertDeleteOpen, setAlertDeleteOpen] = useState(false);
+    const { deleteActivityBtn } = useContext(context);
+
+    const onClickDelete = (id) => {
+        deleteActivityBtn(id)
+        setAlertDeleteOpen(false);
+    }
     return(
-    <TableRow
-    style={{maxHeight: '10px'}}
-    // key={row.name}
-    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-    >
-        <TableCell style={{width:'38%', verticalAlign:'baseline'}} component="th" scope="row">
-            {props.row.activityName}
-        </TableCell>
-        <TableCell style={{width:'35%', verticalAlign:'baseline'}} align="center">{props.row.activityStartDate}</TableCell>
-        <TableCell style={{width:'17%', verticalAlign:'baseline'}} align="right">
-            <Button variant="contained" component={Link} to={'/mainRoom/'+id}>開始討論</Button>
-        </TableCell>
-        <TableCell style={{width:'5%', verticalAlign:'baseline'}} align="center">
-            <Button variant="contained" color='secondary'>編輯</Button>
-        </TableCell>
-        <TableCell style={{width:'5%', verticalAlign:'baseline'}} align="center">
-            <Button variant="outlined" color='error'>刪除</Button>
-        </TableCell>
-    </TableRow>
+    <>
+        <TableRow
+        style={{maxHeight: '10px'}}
+        // key={row.name}
+        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+        >
+            <TableCell style={{width:'38%', verticalAlign:'baseline'}} component="th" scope="row">
+                {props.row.activityName}
+            </TableCell>
+            <TableCell style={{width:'35%', verticalAlign:'baseline'}}>{props.row.activityStartDate}</TableCell>
+            <TableCell style={{width:'17%', verticalAlign:'baseline'}} align="right">
+                {dayjs().isBefore(props.row.activityExpiryDate) ? 
+                    <Button variant="contained" component={Link} to={'/mainRoom/'+props.row.id}>開始討論</Button> :
+                    <Button variant="contained" disabled>開始討論</Button> 
+                }
+            </TableCell>
+            <TableCell style={{width:'5%', verticalAlign:'baseline'}} align="center">
+                <Button variant="contained" color='secondary'>編輯</Button>
+            </TableCell>
+            <TableCell style={{width:'5%', verticalAlign:'baseline'}} align="center">
+                <Button variant="outlined" color='error' onClick={() => setAlertDeleteOpen(true)}>刪除</Button>
+            </TableCell>
+        </TableRow>
+        <Modal
+          open={alertDeleteOpen}
+          onClose={() => setAlertDeleteOpen(false)}
+        >
+            <Box style={{position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 260, backgroundColor: 'white', boxShadow: 24, padding:'20px 25px', borderRadius:'5px'}}>
+                請問確定要刪除此討論活動嗎?
+                <Box style={{display:'flex', marginTop:'25px', justifyContent:'flex-end'}}>
+                    <Button variant="outlined" color="error" style={{fontWeight:'bold'}} onClick={() => {onClickDelete(props.row.id)}}>確定</Button>
+                    <Button variant="contained" color="secondary" style={{fontWeight:'bold', marginLeft:'12px'}} onClick={() => setAlertDeleteOpen(false)}>取消</Button>
+                </Box>
+            </Box>
+        </Modal>
+    </>
     );
 }
 
@@ -90,7 +102,7 @@ export default function ListInGroup(appProps) {
     const [successAlertOpen, setSuccessAlertOpen] = useState(false);
     let ref = React.createRef();
     const [rows, setRows] = useState(undefined)
-    const {data, isLoading} = useQuery(['lists', groupId], () =>
+    const {data, isLoading, refetch, status} = useQuery(['lists', groupId], () =>
     getActivities(groupId), {
         onSuccess: () => {
             setRows(data)
@@ -173,6 +185,12 @@ export default function ListInGroup(appProps) {
         onSuccess: () => {
             setDisplayAddForm(false)
             setSuccessAlertOpen(true);
+            refetch();
+        }
+    })
+    const {mutate: mutateDeleteActivity} = useMutation(deleteActivity, {
+        onSuccess: () => {
+            refetch();
         }
     })
 
@@ -239,7 +257,10 @@ export default function ListInGroup(appProps) {
         mutateGetTeams(id)
         setCheckResult(true)
     }
-    const contextValue = {deleteAStage, getTeamsBtn};
+    const deleteActivityBtn = (id) => {
+        mutateDeleteActivity(id)
+    }
+    const contextValue = {deleteAStage, getTeamsBtn, deleteActivityBtn};
 
     function handleDragEnd(event) {
         // console.log("Drag end called");
@@ -419,20 +440,19 @@ export default function ListInGroup(appProps) {
             flexWrap:'wrap'
           };
           
-          const containerStyle2 = {
-              background: "#EEF1F4",
-              padding: '10 10 10 0',
-              margin: 10,
-              minHeight: '120px',
-              display: 'flex',
-              borderRadius: '2px',
-              flexWrap:'wrap'
-            };
+        const containerStyle2 = {
+            background: "#EEF1F4",
+            padding: '10 10 10 0',
+            margin: 10,
+            minHeight: '120px',
+            display: 'flex',
+            borderRadius: '2px',
+            flexWrap:'wrap'
+        };
         return(
             <React.Fragment>
                 <Modal
                     open={groupModalOpen}
-                    // onClose={() => setGroupModalOpen(false)}
                 >
                     <Box style={{position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 800, backgroundColor: 'white', boxShadow: 24, padding:'20px 25px', borderRadius:'5px', display:'flex', flexDirection:'column', alignItems:'center'}}>
                         <Box style={{display:'flex'}}>
@@ -445,6 +465,7 @@ export default function ListInGroup(appProps) {
                             onDragStart={handleDragStart}
                             onDragOver={handleDragOver}
                             onDragEnd={handleDragEndChild}
+                            measuring={measuringConfig}
                         >
                             <Grid container>
                                 <Grid item xs={6}>
@@ -642,14 +663,14 @@ export default function ListInGroup(appProps) {
                         <TableHead>
                         <TableRow>
                             <TableCell style={{width:'38%', padding:0}}>討論活動名稱</TableCell>
-                            <TableCell style={{width:'35%'}} align="center">討論日期</TableCell> 
+                            <TableCell style={{width:'35%'}}>討論日期</TableCell> 
                             <TableCell style={{width:'17%'}} align="right"> </TableCell>
                             <TableCell style={{width:'5%'}} align="center"> </TableCell>
                             <TableCell style={{width:'5%'}} align="center"> </TableCell>
                         </TableRow>
                         </TableHead>
                         <TableBody>
-                            {rows?.map((row) => <Rows row={row} key={row.id} />)}
+                            {status === 'success' && rows?.map((row) => <Rows row={row} key={row.id} />)}
                         </TableBody>
                     </Table>
                 </TableContainer>

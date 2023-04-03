@@ -73,7 +73,11 @@ export const createStage = async (data) => {
 // Delete a stage
 export const deleteStage = (id, data) => instance.delete(`/stage/${id}`, data);
 // Update a group
-export const updateGroup = (id, data) => instance.post(`/group/${id}`, data);
+export const updateGroup = async ({id, groupInfo}) => {
+    const response = await instance.post(`/group/${id}`, groupInfo);
+    const data = await response.data;
+    return data;
+}
 // Save stages sequence
 export const saveStagesSequence = (data) => instance.post('/stages', data);
 // Create new teams in a stage
@@ -101,7 +105,10 @@ export const getActivities = async (id) => {
     const data = await response.data;
     return data
 }
-
+// delete an activity
+export const deleteActivity = (id, data) => instance.delete(`/activity/${id}`, data);
+// delete a group
+export const deleteGroup = (id, data) => instance.delete(`/group/${id}`, data);
 
 
 
