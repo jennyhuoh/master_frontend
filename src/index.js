@@ -7,6 +7,11 @@ import App from './App';
 // import { apiSlice } from './features/api/apiSlice';
 import { BrowserRouter } from 'react-router-dom';
 import reportWebVitals from './reportWebVitals';
+import * as process from 'process';
+
+window.global = window;
+window.process = process;
+window.Buffer = [];
 
 const theme = createTheme({
   palette: {
