@@ -109,6 +109,15 @@ export const getActivities = async (id) => {
 export const deleteActivity = (id, data) => instance.delete(`/activity/${id}`, data);
 // delete a group
 export const deleteGroup = (id, data) => instance.delete(`/group/${id}`, data);
+export const getAnActivity = async (id) => {
+    const response = await instance.get(`/activity/${id}`);
+    const data = await response.data;
+    return data;
+}
+
+
+
+
 
 
 

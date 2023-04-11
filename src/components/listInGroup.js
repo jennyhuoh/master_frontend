@@ -26,6 +26,13 @@ const Rows = (props) => {
         deleteActivityBtn(id)
         setAlertDeleteOpen(false);
     }
+    const openInNewTab = url => {
+        window.open(url, '_blank', 'noopener,noreferrer');
+    };
+    const onClickStartDiscuss = () => {
+        openInNewTab(`http://localhost:3000/mainRoom/${props.groupId}/${props.row.id}`)
+        localStorage.setItem('discussType', 'all');
+    }
     return(
     <>
         <TableRow
@@ -39,7 +46,7 @@ const Rows = (props) => {
             <TableCell style={{width:'35%', verticalAlign:'baseline'}}>{props.row.activityStartDate}</TableCell>
             <TableCell style={{width:'17%', verticalAlign:'baseline'}} align="right">
                 {dayjs().isBefore(props.row.activityExpiryDate) ? 
-                    <Button variant="contained" component={Link} to={'/mainRoom/'+props.row.id}>開始討論</Button> :
+                    <Button variant="contained" onClick={onClickStartDiscuss}>開始討論</Button> :
                     <Button variant="contained" disabled>開始討論</Button> 
                 }
             </TableCell>
@@ -593,7 +600,7 @@ export default function ListInGroup(appProps) {
         <Provider value={contextValue}>
             {displayAddForm && (
                 <Box m={'2vw 3vw 2vw 3vw'}>
-                    <Paper style={{marginTop:'15px', backgroundColor:'white', padding:'2vw', marginBottom:'30px', borderRadius:'10px'}}>
+                    <Paper elevation={3} style={{marginTop:'15px', backgroundColor:'white', padding:'2vw', marginBottom:'30px', borderRadius:'10px'}}>
                         <div style={{fontWeight:'bold', fontSize:'1.5vw'}}>新增討論活動</div>
                         <Divider style={{marginTop:'15px', borderColor:'#707070', marginBottom:'15px'}}/>
                         <Grid container spacing={20} style={{padding:'0 20px'}}>
@@ -652,7 +659,7 @@ export default function ListInGroup(appProps) {
                 </Box>
             )}
             <Box m={'2vw 3vw 2vw 3vw'}>
-            <Paper style={{marginTop:'15px', backgroundColor:'white', padding:'2vw', marginBottom:'30px', borderRadius:'10px'}}>
+            <Paper elevation={3} style={{marginTop:'15px', backgroundColor:'white', padding:'2vw', marginBottom:'30px', borderRadius:'10px'}}>
                 <Box style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
                     <div style={{fontWeight:'bold', fontSize:'1.5vw'}}>討論活動列表</div>
                     <Button variant="contained" color='secondary' style={{fontWeight:'bold'}} onClick={() => setDisplayAddForm(true)}><Add sx={{mr:0.8}} fontSize="small" />新增討論活動</Button> 
@@ -670,7 +677,7 @@ export default function ListInGroup(appProps) {
                         </TableRow>
                         </TableHead>
                         <TableBody>
-                            {status === 'success' && rows?.map((row) => <Rows row={row} key={row.id} />)}
+                            {status === 'success' && rows?.map((row) => <Rows groupId={appProps.groupId} row={row} key={row.id} />)}
                         </TableBody>
                     </Table>
                 </TableContainer>

@@ -1,4 +1,4 @@
-import { TextField, Box, Grid, Button, Paper, IconButton, CircularProgress, Divider, Alert, Snackbar, Modal } from "@mui/material";
+import { TextField, Box, Grid, Button, Paper, IconButton, CircularProgress, Divider, Alert, Snackbar, Modal, Typography } from "@mui/material";
 import { ArrowBackIosNew } from "@mui/icons-material";
 import React,{ useState, useEffect } from 'react';
 import { DatePicker, LocalizationProvider, } from "@mui/x-date-pickers";
@@ -25,7 +25,6 @@ export default function DiscussGroupInfo(appProps) {
     });
     useEffect(() => {
         setGroupInfo(data);
-        
     }, [data])
 
     const hostOption = (groupInfo!=undefined) ? [{value:groupInfo.owner.userEmail, label:groupInfo.owner.userName}] : []
@@ -76,9 +75,12 @@ export default function DiscussGroupInfo(appProps) {
         return(
             <>
             <Box m={'0 3vw 2vw 3vw'} sx={{pt:'12vh'}}>
-                <IconButton style={{color:'black', marginBottom:'5px'}} component={Link} to='/home'><ArrowBackIosNew sx={{fontSize:'1.5vw'}} /></IconButton><span style={{fontWeight:'bold', fontSize:'2vw', marginLeft:'10px'}}>{groupInfo.groupName}</span>
+                <Box style={{display:'flex', alignItems:'center'}}>
+                    <IconButton style={{color:'black'}} component={Link} to='/home'><ArrowBackIosNew sx={{fontSize:'1.5vw'}} /></IconButton>
+                    <Typography style={{fontWeight:'bold', fontSize:'2vw', marginLeft:'10px'}}>{groupInfo.groupName}</Typography>
+                </Box>
                 {/* 群組資訊 */}
-                <Paper style={{marginTop:'15px', backgroundColor:'white', padding:'2vw', borderRadius:'10px'}}>
+                <Paper elevation={3} style={{marginTop:'15px', backgroundColor:'white', padding:'2vw', borderRadius:'10px'}}>
                     <div style={{fontWeight:'bold', fontSize:'1.5vw'}}>基本資訊</div>
                     <Divider style={{margin:'15px 0', borderColor:'#707070'}}/>
                     <Grid container spacing={20} style={{padding:'0 20px'}}>

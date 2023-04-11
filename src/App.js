@@ -33,7 +33,7 @@ export default function App() {
         <Route path='/home' element={<Home />} />
         <Route path='/group/:groupId' element={<Child3 />} />
         <Route path='/groupResult/:discussId' element={<Child />} />
-        <Route path='/mainRoom/:roomId' element={<Child2 />} />
+        <Route path='/mainRoom/:groupId/:activityId' element={<Child2 />} />
         <Route path='/addGroup' element={<AddGroup />} />
         <Route path='/blankPage' element={<BlankPage />} />
       </Routes>
@@ -48,9 +48,9 @@ export default function App() {
     );
   }
   function Child2() {
-    let {roomId} = useParams();
+    let {groupId, activityId} = useParams();
     return(
-      <MainRoom roomId={roomId}/>
+      <MainRoom groupId={groupId} activityId={activityId} />
     );
   }
   function Child3() {

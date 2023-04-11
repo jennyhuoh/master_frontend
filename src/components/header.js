@@ -62,8 +62,8 @@ export default function Header() {
                 >
                     <Menu />
                 </IconButton>
-                <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                    OCD
+                <Typography variant="h6" component="div" sx={{ flexGrow: 1, letterSpacing:1.8 }}>
+                    Online Cooperative Discussion
                 </Typography>
                 <Box style={{display:'flex', backgroundColor:'white', borderRadius:'3px', color:'#2B3143', padding:'5px 10px', marginRight:'15px'}}>
                     <Typography style={{marginRight:'5px', fontSize:'14px', alignSelf:'center', fontWeight:'bolder'}}>歡迎，{localStorage.getItem('userName')}</Typography>
