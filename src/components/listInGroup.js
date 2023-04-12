@@ -457,7 +457,7 @@ export default function ListInGroup(appProps) {
             flexWrap:'wrap'
         };
         return(
-            <React.Fragment>
+            // <React.Fragment>
                 <Modal
                     open={groupModalOpen}
                 >
@@ -502,7 +502,7 @@ export default function ListInGroup(appProps) {
                         <ResultModal />
                     </Box>
                 </Modal>
-            </React.Fragment>
+            // </React.Fragment>
         );
     }
     const onCloseResultModal = async () => {
@@ -662,7 +662,10 @@ export default function ListInGroup(appProps) {
             <Paper elevation={3} style={{marginTop:'15px', backgroundColor:'white', padding:'2vw', marginBottom:'30px', borderRadius:'10px'}}>
                 <Box style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
                     <div style={{fontWeight:'bold', fontSize:'1.5vw'}}>討論活動列表</div>
-                    <Button variant="contained" color='secondary' style={{fontWeight:'bold'}} onClick={() => setDisplayAddForm(true)}><Add sx={{mr:0.8}} fontSize="small" />新增討論活動</Button> 
+                    <Button variant="contained" color='secondary' style={{fontWeight:'bold'}} onClick={() => {
+                        setStages([])
+                        setDisplayAddForm(true)
+                    }}><Add sx={{mr:0.8}} fontSize="small" />新增討論活動</Button> 
                 </Box>
                 <Divider style={{marginTop:'15px', borderColor:'#707070'}}/>
                 <TableContainer>

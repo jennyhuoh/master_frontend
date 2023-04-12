@@ -1,9 +1,11 @@
 import websocket, { Socket, connect } from 'socket.io-client';
 import { useRef, useEffect, useState, useCallback } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Box, Button, IconButton, Fab, Tooltip, Backdrop, CircularProgress } from '@mui/material';
+import { useFetcher, useNavigate, useParams } from 'react-router-dom';
+import { Box, Button, IconButton, Fab, Tooltip, Backdrop, CircularProgress, Typography } from '@mui/material';
 import { Mic, MicOff, ExitToApp, Groups2 } from '@mui/icons-material';
 import { useStateWithCallback } from '../hooks/useStateWithCallback';
+import { createRecord } from '../features/api';
+import { useMutation } from 'react-query';
 import freeice from 'freeice';
 import AvatarGroup from 'react-avatar-group';
 import randomColor from 'randomcolor';
@@ -29,6 +31,19 @@ export default function MainRoomContent(pageMainRoomProps) {
     const [borderColor, setBorderColor] = useState(color);
     const [isMute, setMute] = useState(true);
     const [backDropOpen, setBackDropOpen] = useState(false);
+    const [whoIsTalking, setWhoIsTalking] = useState(null);
+
+    const mediaRecorder = useRef(null);
+    const [recordingStatus, setRecordingStatus] = useState("inactive");
+    const [audioChunks, setAudioChunks] = useState(null);
+    const [audio, setAudio] = useState(null);
+    const mimeType = "audio/wav";
+
+    const {mutate} = useMutation(createRecord, {
+        onSuccess: () => {
+
+        }
+    })
 
     const addNewPeer = useCallback((newPeer, cb) => {
         const lookingFor = peers.find((peer) => peer.id === newPeer.iD);
@@ -58,7 +73,6 @@ export default function MainRoomContent(pageMainRoomProps) {
             wsRef.current.on('sessionDescription', handleRemoteSDP)
             // Listen for mute/unmute
             wsRef.current.on('mute', ({peerId, userId}) => {
-                console.log('in')
                 handleSetMute(true, userId)
             })
             wsRef.current.on('unMute', ({peerId, userId}) => {
@@ -66,10 +80,13 @@ export default function MainRoomContent(pageMainRoomProps) {
             })
             // socket emit JOIN socket io
             wsRef.current.emit('joinRoom', {roomID, user})
+
         }
+    
         async function captureMedia() {
             // Start capturing local audio stream
             localMediaStream.current = await navigator.mediaDevices.getUserMedia({audio: true})
+            mediaRecorder.current = new MediaRecorder(localMediaStream.current, {type: mimeType})
         }
         async function handleNewPeer({peerId, createOffer, user: remoteUser}){
              console.log('here is addPeer')
@@ -197,15 +214,62 @@ export default function MainRoomContent(pageMainRoomProps) {
         }, 200)
     }
 
-    const handleMuteClick = (peerId) => {
+    const handleMuteClick = async (peerId) => {
         if(peerId !== user.id) {
             return;
+        }
+        // 需要多判斷是否為分組討論
+        if(isMute === true) {
+            setRecordingStatus("recording")
+            mediaRecorder.current.start()
+            let localChunks = [];
+            mediaRecorder.current.ondataavailable = (event) => {
+                if(typeof event.data === "undefined") {
+                    console.log('e data undefined')
+                } else if(event.data.size === 0) {
+                    console.log('size 0')
+                } else {
+                    localChunks.push(event.data);
+                }
+            }
+            setAudioChunks(localChunks);
+        } else if(isMute === false) {
+            setRecordingStatus("inactive")
+            mediaRecorder.current.stop()
+            mediaRecorder.current.onstop = () => {
+                const audioBlob = new Blob(audioChunks, {type: mimeType})
+                const audioUrl = URL.createObjectURL(audioBlob);
+                setAudio(audioUrl)
+                let formData = new FormData();
+                formData.append("recording", audioBlob)
+                formData.append("name", localStorage.getItem('userName'))
+                setAudioChunks([])
+                console.log('url', audioUrl)
+                console.log('blob', audioBlob)
+                mutate({
+                    stageId:22,
+                    teamId: roomID,
+                    data: formData,
+                })
+           }
         }
         setMute(!isMute)
     }
 
     useEffect(() => {
         peersRef.current = peers;
+        getTalking()
+        async function getTalking() {
+            if(peers !== []) {
+                var members = [];
+                await Promise.all(peers.map((peer) => {
+                    if(peer.muted === false){
+                        members.push(peer)
+                    }
+                }))
+                setWhoIsTalking(members);
+            }
+        }
     }, [peers]);
 
     const onClickGroupDiscussion = () => {
@@ -223,9 +287,15 @@ export default function MainRoomContent(pageMainRoomProps) {
     if(true){
         return(
             <Box>
-                {/* <Box style={{width:'100vw', height:'50px', }}></Box> */}
-                <Box style={{display:'flex', flexWrap:'wrap', gap:'80px', padding:'0 150px'}}>
-                    {console.log('peers', peers)}
+                {whoIsTalking ? 
+                <Box style={{display:'flex', flexDirection:'column', alignItems:'center'}}>
+                {whoIsTalking.map((member) => {
+                    return(<Typography style={{color:'white', fontWeight:'semi-bold'}} key={member.id}>{member.name}正在發言…</Typography>)
+                })}
+                </Box>
+                : ""}
+                <Box style={{display:'flex', flexWrap:'wrap', gap:'80px', padding:'30px 150px'}}>
+                    {/* {console.log('peers', peers)} */}
                     {peers.map((peer) => {
                         return(
                         <div key={peer.id} style={{display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center'}}>

@@ -9,6 +9,15 @@ const instance = axios.create({
     },
     timeout:20000,
 })
+const recordInstance = axios.create({
+    baseURL: 'http://localhost:3001/',
+    headers: {
+        'X-Powered-By': 'Express',
+        'Content-Type': 'multipart/form-data',
+        'Access-Control-Allow-Origin': '*',
+    },
+    timeout: 20000,
+})
 
 instance.interceptors.response.use(
     function(response) {
@@ -114,6 +123,8 @@ export const getAnActivity = async (id) => {
     const data = await response.data;
     return data;
 }
+// Create a record
+export const createRecord = ({stageId, teamId, data}) => recordInstance.post(`stage/${stageId}/team/${teamId}/record`, data);
 
 
 
