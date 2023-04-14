@@ -63,7 +63,8 @@ export default function MainRoomContent(pageMainRoomProps) {
             addNewPeer({...user, muted:true}, () => {
                 const localElement = audioElements.current[user.id];
                 if(localElement) {
-                    // localElement.volume = 0;
+                    // localElement.volume = 1;
+                    localElement.muted = true
                     localElement.srcObject = localMediaStream.current;
                 }
             })
@@ -237,6 +238,7 @@ export default function MainRoomContent(pageMainRoomProps) {
             setRecordingStatus("inactive")
             mediaRecorder.current.stop()
             mediaRecorder.current.onstop = () => {
+                console.log('audioChunks', audioChunks)
                 const audioBlob = new Blob(audioChunks, {type: mimeType})
                 const audioUrl = URL.createObjectURL(audioBlob);
                 setAudio(audioUrl)
@@ -287,6 +289,7 @@ export default function MainRoomContent(pageMainRoomProps) {
     if(true){
         return(
             <Box>
+                {audio && <audio src={audio} controls />}
                 {whoIsTalking ? 
                 <Box style={{display:'flex', flexDirection:'column', alignItems:'center'}}>
                 {whoIsTalking.map((member) => {

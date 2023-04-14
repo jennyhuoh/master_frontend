@@ -1,6 +1,6 @@
 import { Box, Divider, Paper, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Button, Grid, TextField, Typography, Alert, Snackbar, Modal, Radio, IconButton } from "@mui/material";
 import React,{ useEffect, useState, useContext } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { v4 as uuid } from 'uuid';
 import { Add, AddCircleOutline, AddCircle, RemoveCircle } from '@mui/icons-material';
 import { LocalizationProvider, DateTimePicker } from '@mui/x-date-pickers';
@@ -21,7 +21,7 @@ const Rows = (props) => {
     // const id = uuid();
     const [alertDeleteOpen, setAlertDeleteOpen] = useState(false);
     const { deleteActivityBtn } = useContext(context);
-
+    let navigate = useNavigate();
     const onClickDelete = (id) => {
         deleteActivityBtn(id)
         setAlertDeleteOpen(false);
@@ -37,8 +37,10 @@ const Rows = (props) => {
     <>
         <TableRow
         style={{maxHeight: '10px'}}
+        className="listInGroup"
         // key={row.name}
         sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+        onClick={() => {navigate('/blankPage')}}
         >
             <TableCell style={{width:'38%', verticalAlign:'baseline'}} component="th" scope="row">
                 {props.row.activityName}

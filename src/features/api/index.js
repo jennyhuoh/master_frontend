@@ -125,7 +125,20 @@ export const getAnActivity = async (id) => {
 }
 // Create a record
 export const createRecord = ({stageId, teamId, data}) => recordInstance.post(`stage/${stageId}/team/${teamId}/record`, data);
-
+// Get recordings
+export const getRecordings = async ({stageId, teamId}) => {
+    const response = await recordInstance.get(`/stage/${stageId}/team/${teamId}/records`);
+    const data = await response.data;
+    console.log('getRecording response', data);
+    const raw = window.atob(data.recording)
+    const binaryData = new Uint8Array(new ArrayBuffer(raw.length));
+    for(let i = 0; i < raw.length; i++){
+        binaryData[i] = raw.charCodeAt(i);
+    }
+    const blob = new Blob([binaryData], {'type': 'audio/wav'});
+    const url = URL.createObjectURL(blob);
+    return {info:data.info, recordingUrl:url};
+}
 
 
 
@@ -161,13 +174,13 @@ export const postCreateMeetingId = async (token, data) => {
 //     console.log(res.data)
 // })
 // }
-export const getRecordings = async ({token, roomId}) => { 
-    const response = await axios.get(`https://api.videosdk.live/v2/recordings?roomId=${roomId}`, {
-        headers: {
-            "Content-Type": "application/json",
-            authorization: `${token}`,
-        },
-    })
-    console.log(response)
-    return response.data
-}
+// export const getRecordings = async ({token, roomId}) => { 
+//     const response = await axios.get(`https://api.videosdk.live/v2/recordings?roomId=${roomId}`, {
+//         headers: {
+//             "Content-Type": "application/json",
+//             authorization: `${token}`,
+//         },
+//     })
+//     console.log(response)
+//     return response.data
+// }
