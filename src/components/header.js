@@ -76,8 +76,8 @@ export default function Header() {
                     />
                 </Box>
                 {keycloak.authenticated ?
-                    <Button variant="outlined" color="secondary" onClick={onClickLogout}>Logout</Button> :
-                    <Button variant="outlined" color="secondary" onClick={() => keycloak.login()}>Login</Button>
+                    <Button variant="outlined" color="secondary" onClick={onClickLogout}>登出</Button> :
+                    <Button variant="outlined" color="secondary" onClick={() => keycloak.login()}>登入</Button>
                 }
                 </Toolbar>
             </AppBar>

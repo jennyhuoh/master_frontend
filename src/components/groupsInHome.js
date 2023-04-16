@@ -11,15 +11,13 @@ const Groups = (props) => {
     const a = props.members.map((member) => {
         memberArr.push(member.userName);
     })
-
-
     
     return(
         <Card sx={{ width: 200, height: 130, borderRadius:'5px',padding:'10px' }}>
             <CardContent xs={{paddingBottom:'0'}}>
                 <Grid container>
                     <Grid item xs={10}><Typography style={{fontSize:'16px', fontWeight:'bold'}} component="div">
-                        <Badge badgeContent={4} color="primary" style={{marginRight:'15px', marginTop:'-5px'}}>
+                        <Badge badgeContent={props.activityNum} color="primary" style={{marginRight:'15px', marginTop:'-5px'}} showZero={true}>
                             <Event fontSize="small" sx={{color:'grey'}} />
                         </Badge>               
                         {props.name}

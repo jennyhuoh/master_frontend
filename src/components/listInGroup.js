@@ -39,18 +39,17 @@ const Rows = (props) => {
         style={{maxHeight: '10px'}}
         className="listInGroup"
         // key={row.name}
-        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-        onClick={() => {navigate('/blankPage')}}
+        sx={{ '&:last-child td, &:last-child th': { border: 0 }, '&:hover':{ backgroundColor:'#EEF1F4', cursor: 'pointer'} }}
         >
-            <TableCell style={{width:'38%', verticalAlign:'baseline'}} component="th" scope="row">
+            <TableCell onClick={() => {navigate('/blankPage')}} style={{width:'38%', verticalAlign:'baseline'}} component="th" scope="row">
                 {props.row.activityName}
             </TableCell>
-            <TableCell style={{width:'35%', verticalAlign:'baseline'}}>{props.row.activityStartDate}</TableCell>
+            <TableCell onClick={() => {navigate('/blankPage')}} style={{width:'35%', verticalAlign:'baseline'}}>{props.row.activityStartDate}</TableCell>
             <TableCell style={{width:'17%', verticalAlign:'baseline'}} align="right">
-                {dayjs().isBefore(props.row.activityExpiryDate) ? 
-                    <Button variant="contained" onClick={onClickStartDiscuss}>開始討論</Button> :
-                    <Button variant="contained" disabled>開始討論</Button> 
-                }
+            {dayjs().isBefore(props.row.activityExpiryDate) ? 
+                <Button variant="contained" onClick={onClickStartDiscuss}>開始討論</Button> :
+                <Button variant="contained" disabled>開始討論</Button> 
+            }
             </TableCell>
             <TableCell style={{width:'5%', verticalAlign:'baseline'}} align="center">
                 <Button variant="contained" color='secondary'>編輯</Button>
@@ -460,8 +459,8 @@ export default function ListInGroup(appProps) {
         };
         return(
             // <React.Fragment>
-                <Modal
-                    open={groupModalOpen}
+                <div
+                    // open={groupModalOpen}
                 >
                     <Box style={{position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 800, backgroundColor: 'white', boxShadow: 24, padding:'20px 25px', borderRadius:'5px', display:'flex', flexDirection:'column', alignItems:'center'}}>
                         <Box style={{display:'flex'}}>
@@ -503,7 +502,7 @@ export default function ListInGroup(appProps) {
                         </Box>
                         <ResultModal />
                     </Box>
-                </Modal>
+                </div>
             // </React.Fragment>
         );
     }
@@ -695,7 +694,7 @@ export default function ListInGroup(appProps) {
             </Snackbar>
             <Snackbar open={successAlertOpen} autoHideDuration={6000} onClose={onCloseAlert}>
                 <Alerts ref={ref} onClose={onCloseAlert} severity="success"sx={{width:'28vw'}}>
-                    成功新增!
+                成功新增!
                 </Alerts>
             </Snackbar>
             <Modal

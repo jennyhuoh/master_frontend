@@ -5,7 +5,6 @@ import { useState, useEffect } from 'react';
 
 export default function BlankPage() { 
   const [audioBuffer, setAudioBuffer] = useState(null);
-  const [audioUrl, setAudioUrl] = useState(null);
   const {mutate} = useMutation(getRecordings, {
     onSuccess: (data) => {
       console.log('get recording success')
@@ -16,7 +15,6 @@ export default function BlankPage() {
   useEffect(() => {
     if(audioBuffer !== null) {
       console.log('buffer',  audioBuffer)
-      setAudioUrl(audioBuffer.recordingUrl)
     }
   }, [audioBuffer])
   
@@ -30,7 +28,9 @@ export default function BlankPage() {
   return (
     <Box>
       <Button onClick={onClick}>Click</Button>
-      {audioUrl && <audio src={audioUrl} controls />}
+      {audioBuffer?.map((audio) => {
+        return(<audio key={audio.info.id} src={audio.recordingUrl} controls />)
+      })}
     </Box>
   )
 }

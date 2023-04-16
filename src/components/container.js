@@ -10,7 +10,7 @@ export default function Container(props) {
   const { setNodeRef } = useDroppable({
     id
   });
-
+  console.log('items', items)
   return (
     <SortableContext
       id={id}
@@ -19,6 +19,7 @@ export default function Container(props) {
     >
       <div ref={setNodeRef} style={props.style}>
         {items?.map((item) => (
+          
           <GroupSortableItem key={item.id} id={item.id} name={item.label} />
         ))}
       </div>

@@ -130,14 +130,20 @@ export const getRecordings = async ({stageId, teamId}) => {
     const response = await recordInstance.get(`/stage/${stageId}/team/${teamId}/records`);
     const data = await response.data;
     console.log('getRecording response', data);
-    const raw = window.atob(data.recording)
-    const binaryData = new Uint8Array(new ArrayBuffer(raw.length));
-    for(let i = 0; i < raw.length; i++){
-        binaryData[i] = raw.charCodeAt(i);
-    }
-    const blob = new Blob([binaryData], {'type': 'audio/wav'});
-    const url = URL.createObjectURL(blob);
-    return {info:data.info, recordingUrl:url};
+    let result = [];
+    await Promise.all(data.map(async (item) => {
+        let allInfo = await item
+        const raw = window.atob(item.recordings)
+        const binaryData = new Uint8Array(new ArrayBuffer(raw.length));
+        for(let i = 0; i < raw.length; i++){
+            binaryData[i] = raw.charCodeAt(i);
+        }
+        const blob = new Blob([binaryData], {'type': 'audio/wav'});
+        const url = URL.createObjectURL(blob);
+        allInfo.recordingUrl = url;
+        result.push(allInfo);
+    }))
+    return result;
 }
 
 

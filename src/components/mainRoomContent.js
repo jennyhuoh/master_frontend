@@ -220,40 +220,42 @@ export default function MainRoomContent(pageMainRoomProps) {
             return;
         }
         // 需要多判斷是否為分組討論
-        if(isMute === true) {
-            setRecordingStatus("recording")
-            mediaRecorder.current.start()
-            let localChunks = [];
-            mediaRecorder.current.ondataavailable = (event) => {
-                if(typeof event.data === "undefined") {
-                    console.log('e data undefined')
-                } else if(event.data.size === 0) {
-                    console.log('size 0')
-                } else {
-                    localChunks.push(event.data);
+        if(localStorage.getItem('discussType') === 'group'){
+            if(isMute === true) {
+                setRecordingStatus("recording")
+                mediaRecorder.current.start()
+                let localChunks = [];
+                mediaRecorder.current.ondataavailable = (event) => {
+                    if(typeof event.data === "undefined") {
+                        console.log('e data undefined')
+                    } else if(event.data.size === 0) {
+                        console.log('size 0')
+                    } else {
+                        localChunks.push(event.data);
+                    }
                 }
+                setAudioChunks(localChunks);
+            } else if(isMute === false) {
+                setRecordingStatus("inactive")
+                mediaRecorder.current.stop()
+                mediaRecorder.current.onstop = () => {
+                    console.log('audioChunks', audioChunks)
+                    const audioBlob = new Blob(audioChunks, {type: mimeType})
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    setAudio(audioUrl)
+                    let formData = new FormData();
+                    formData.append("recording", audioBlob)
+                    formData.append("name", localStorage.getItem('userName'))
+                    setAudioChunks([])
+                    console.log('url', audioUrl)
+                    console.log('blob', audioBlob)
+                    mutate({
+                        stageId:22,
+                        teamId: roomID,
+                        data: formData,
+                    })
             }
-            setAudioChunks(localChunks);
-        } else if(isMute === false) {
-            setRecordingStatus("inactive")
-            mediaRecorder.current.stop()
-            mediaRecorder.current.onstop = () => {
-                console.log('audioChunks', audioChunks)
-                const audioBlob = new Blob(audioChunks, {type: mimeType})
-                const audioUrl = URL.createObjectURL(audioBlob);
-                setAudio(audioUrl)
-                let formData = new FormData();
-                formData.append("recording", audioBlob)
-                formData.append("name", localStorage.getItem('userName'))
-                setAudioChunks([])
-                console.log('url', audioUrl)
-                console.log('blob', audioBlob)
-                mutate({
-                    stageId:22,
-                    teamId: roomID,
-                    data: formData,
-                })
-           }
+            }
         }
         setMute(!isMute)
     }
@@ -289,7 +291,7 @@ export default function MainRoomContent(pageMainRoomProps) {
     if(true){
         return(
             <Box>
-                {audio && <audio src={audio} controls />}
+                {/* {audio && <audio src={audio} controls />} */}
                 {whoIsTalking ? 
                 <Box style={{display:'flex', flexDirection:'column', alignItems:'center'}}>
                 {whoIsTalking.map((member) => {
