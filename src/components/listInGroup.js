@@ -458,9 +458,9 @@ export default function ListInGroup(appProps) {
             flexWrap:'wrap'
         };
         return(
-            // <React.Fragment>
-                <div
-                    // open={groupModalOpen}
+            <React.Fragment>
+                <Modal
+                    open={groupModalOpen}
                 >
                     <Box style={{position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 800, backgroundColor: 'white', boxShadow: 24, padding:'20px 25px', borderRadius:'5px', display:'flex', flexDirection:'column', alignItems:'center'}}>
                         <Box style={{display:'flex'}}>
@@ -478,16 +478,16 @@ export default function ListInGroup(appProps) {
                             <Grid container>
                                 <Grid item xs={6}>
                                 {Object.keys(groupItems).map((key, index) => {
-                                    if(key !== 'main'){
-                                        return(
-                                            <Grid container key={key} style={{display:'flex'}}>
-                                                <Grid item xs={2} style={{background: "#5A81A8", marginTop: 10, height: '65px', display: 'flex', borderRadius: '3px', justifyContent:'center', alignItems:'center', color:'white', padding:5}}>{index}</Grid>
-                                                <Grid item xs={10}>
-                                                <Container style={containerStyle} key={key} id={key} items={groupItems[key]} />
-                                                </Grid>
+                                if(key !== 'main'){
+                                    return(
+                                        <Grid container key={key} style={{display:'flex'}}>
+                                            <Grid item xs={2} style={{background: "#5A81A8", marginTop: 10, height: '65px', display: 'flex', borderRadius: '3px', justifyContent:'center', alignItems:'center', color:'white', padding:5}}>{index}</Grid>
+                                            <Grid item xs={10}>
+                                            <Container style={containerStyle} key={key} id={key} items={groupItems[key]} />
                                             </Grid>
-                                        )
-                                    }
+                                        </Grid>
+                                    )
+                                }
                                 })}
                                 </Grid>
                                 <Grid item xs={6}>
@@ -502,8 +502,8 @@ export default function ListInGroup(appProps) {
                         </Box>
                         <ResultModal />
                     </Box>
-                </div>
-            // </React.Fragment>
+                </Modal>
+            </React.Fragment>
         );
     }
     const onCloseResultModal = async () => {

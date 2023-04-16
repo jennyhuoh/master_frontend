@@ -25,7 +25,7 @@ const Groups = (props) => {
                     <Grid item xs={2} style={{marginTop:'-5px'}}><IconButton size="small" component={Link} to={`/group/${props.meetingId}`}><MoreHoriz sx={{color:'grey'}} /></IconButton></Grid>
                 </Grid>
                 <Box sx={{mb:1, mt:1}} style={{display:'flex'}}>
-                    <People sx={{color:'grey', mr:1.5, mt:0.5}} fontSize="small"  />
+                    <People sx={{color:'grey', mr:1.5, mt:0.5}} fontSize="small" />
                     <AvatarGroup
                         avatars={memberArr}
                         initialCharacters={2}

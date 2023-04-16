@@ -1,4 +1,4 @@
-import { Box, Typography, IconButton, Toolbar, AppBar, Drawer, Divider, Stack } from "@mui/material";
+import { Box, Typography, IconButton, Toolbar, AppBar, Drawer, Divider, Stack, Card, CardContent, Checkbox } from "@mui/material";
 import { styled, useTheme } from "@mui/material/styles";
 import { Menu, ChevronLeft, ChevronRight } from "@mui/icons-material";
 import { useState, useEffect } from 'react';
@@ -53,6 +53,22 @@ const DrawerHeader = styled("div")(({ theme }) => ({
   justifyContent: "flex-end"
 }));
 
+const StageCard = (props) => {
+    return(
+        <Card sx={{p:'6px', pb:0}}>
+            <CardContent xs={{paddingBottom:'0'}}>
+                <Typography style={{fontSize:'16px', fontWeight:'bold'}} component="div">
+                    {props.order}. {props.name}
+                </Typography>
+                <Box sx={{display:'flex', alignItems:'center', mt:1}}>
+                    <Checkbox color="success" />
+                    <Typography>階段開始</Typography>
+                </Box>
+            </CardContent>
+        </Card>
+    );
+}
+
 export default function RoomHeader(props) {
     const theme = useTheme();
     const [openDrawer, setOpenDrawer] = useState(false);
@@ -61,6 +77,7 @@ export default function RoomHeader(props) {
     const [groupInfo, setGroupInfo] = useState(undefined);
     const [activityInfo, setActivityInfo] = useState(undefined);
     const [stageInfo, setStageInfo] = useState(undefined);
+    const [isOwner, setIsOwner] = useState(false);
     const {data:groupData} = useQuery(['group', groupId], () =>
     getGroupInfo(groupId), {
         onSuccess: async() => {
@@ -69,23 +86,27 @@ export default function RoomHeader(props) {
     })
     const {mutate} = useMutation(getAnActivity, {
         onSuccess: async(data) => {
+            console.log('data', data)
             setActivityInfo(data)
             setStageInfo(data?.stagesForActivity)
         }
     })
-    // if(localStorage.getItem('discussType') === 'all') {
-    //     const {data:activityData} = useQuery(['activity', roomID], () =>
-    //     getAnActivity(roomID), {
-    //         onSuccess: async() => {
-    //             setActivityInfo(activityData)
-    //         }
-    //     })
-    // }
+    useEffect(() => {
+        if(groupInfo !== undefined) {
+            if(groupInfo?.owner.id.toString() === localStorage.getItem('userId')){
+                console.log('owner')
+                setIsOwner(true)
+            }
+        }
+    }, [groupInfo])
+
     useEffect(() => {
         setGroupInfo(groupData)
     }, [groupData])
+
     useEffect(() => {
         if(localStorage.getItem('discussType') === 'all') {
+            console.log('mutate!')
             mutate(roomID)
         }
     }, [localStorage.getItem('discussType')])
@@ -102,19 +123,19 @@ export default function RoomHeader(props) {
         <Box sx={{display:'flex'}}>
             <AppBars position="fixed" color="info" open={openDrawer}>
                 <Toolbar>
-                <IconButton
-                    size="large"
-                    edge="start"
-                    color="inherit"
-                    aria-label="openDrawer"
-                    sx={{ mr: 2, ...(openDrawer && {display:"none"}) }}
-                    onClick={handleDrawerOpen}
-                >
-                    <Menu />
-                </IconButton>
-                <Typography variant="h6" component="div" sx={{ flexGrow: 1, letterSpacing:1.8 }}>
-                    {(groupInfo!==undefined) && (activityInfo!==undefined) ? groupInfo.groupName+': '+activityInfo.activityName : ""}
-                </Typography>
+                    <IconButton
+                        size="large"
+                        edge="start"
+                        color="inherit"
+                        aria-label="openDrawer"
+                        sx={{ mr: 2, ...((!isOwner || openDrawer) ? {display:"none"} : {display: "block"})}}
+                        onClick={handleDrawerOpen}
+                    >
+                        <Menu />
+                    </IconButton>
+                    <Typography variant="h6" component="div" sx={{ flexGrow: 1, letterSpacing:1.8 }}>
+                        {(groupInfo!==undefined) && (activityInfo!==undefined) ? groupInfo.groupName+': '+activityInfo.activityName : ""}
+                    </Typography>
                 </Toolbar>
             </AppBars>
             <Drawer
@@ -137,16 +158,18 @@ export default function RoomHeader(props) {
                 }}
             >
                 <DrawerHeader>
-                <IconButton onClick={handleDrawerClose} color="secondary">
-                    {theme.direction === "ltr" ? (
-                    <ChevronLeft />
-                    ) : (
-                    <ChevronRight />
-                    )}
-                </IconButton>
+                    <IconButton onClick={handleDrawerClose} color="secondary">
+                        {theme.direction === "ltr" ? (
+                        <ChevronLeft />
+                        ) : (
+                        <ChevronRight />
+                        )}
+                    </IconButton>
                 </DrawerHeader>
                 <Divider />
-                {/* {stageInfo?.map((stage) => {<StageCard key={stage} id={stage.id} name={stage.name} grouping={`${stage.grouping}`} />})} */}
+                <Stack spacing={2} sx={{p:'10px', mt:'6px'}}>
+                {stageInfo?.map((stage) => <StageCard key={stage.id} id={stage.id} name={stage.stageName} grouping={`${stage.grouping}`} order={stage.stageOrder} />)}
+                </Stack>
             </Drawer>
             <Main open={openDrawer}>
                 <MainRoomContent groupId={props.groupId} activityId={props.activityId} />
