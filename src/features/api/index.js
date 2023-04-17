@@ -42,6 +42,29 @@ instance.interceptors.response.use(
 
 // create or get a user
 export const createOrGetUser = data => instance.post('/user', data);
+// create a group
+export const createGroup = data => instance.post('/group', data);
+// create a stage
+export const createStage = async (data) => {
+    const response = await instance.post('/stage', data)
+    const datas = await response.data;
+    return datas;
+};
+// Create new teams in a stage
+export const createTeams = async ({id, teams}) => {
+    const response = await instance.post(`/stage/${id}/teams`, teams);
+    const data = await response.data;
+    return data;
+}
+// Create a new activity
+export const createActivity = async ({id, activity}) => {
+    const response = await instance.post(`/group/${id}/activity`, activity);
+    const data = await response.data;
+    return data;
+}
+// Create a record
+export const createRecord = ({stageId, teamId, data}) => recordInstance.post(`stage/${stageId}/team/${teamId}/record`, data);
+
 // get all users
 export const getAllUsers = async() => {
     const response = await instance.get('/users')
@@ -59,8 +82,6 @@ export const getAllUsers = async() => {
     }))
     return result;
 };
-// create a group
-export const createGroup = data => instance.post('/group', data);
 // get all groups
 export const getAllGroups = async (userId) => {
     const response = await instance.get(`/groups/${userId}`)
@@ -73,28 +94,6 @@ export const getGroupInfo = async(groupId) => {
     const data = await response.data;
     return data;
 }
-// create a stage
-export const createStage = async (data) => {
-    const response = await instance.post('/stage', data)
-    const datas = await response.data;
-    return datas;
-};
-// Delete a stage
-export const deleteStage = (id, data) => instance.delete(`/stage/${id}`, data);
-// Update a group
-export const updateGroup = async ({id, groupInfo}) => {
-    const response = await instance.post(`/group/${id}`, groupInfo);
-    const data = await response.data;
-    return data;
-}
-// Save stages sequence
-export const saveStagesSequence = (data) => instance.post('/stages', data);
-// Create new teams in a stage
-export const createTeams = async ({id, teams}) => {
-    const response = await instance.post(`/stage/${id}/teams`, teams);
-    const data = await response.data;
-    return data;
-}
 // get teams for a stage
 export const getTeams = async (id) => {
     const response = await instance.get(`/stage/${id}/teams`);
@@ -102,29 +101,12 @@ export const getTeams = async (id) => {
     const teams = await data.teams;
     return teams;
 }
-// Create a new activity
-export const createActivity = async ({id, activity}) => {
-    const response = await instance.post(`/group/${id}/activity`, activity);
-    const data = await response.data;
-    return data;
-}
 // Get activities from a group
 export const getActivities = async (id) => {
     const response = await instance.get(`/group/${id}/activities`);
     const data = await response.data;
     return data
 }
-// delete an activity
-export const deleteActivity = (id, data) => instance.delete(`/activity/${id}`, data);
-// delete a group
-export const deleteGroup = (id, data) => instance.delete(`/group/${id}`, data);
-export const getAnActivity = async (id) => {
-    const response = await instance.get(`/activity/${id}`);
-    const data = await response.data;
-    return data;
-}
-// Create a record
-export const createRecord = ({stageId, teamId, data}) => recordInstance.post(`stage/${stageId}/team/${teamId}/record`, data);
 // Get recordings
 export const getRecordings = async ({stageId, teamId}) => {
     const response = await recordInstance.get(`/stage/${stageId}/team/${teamId}/records`);
@@ -145,6 +127,35 @@ export const getRecordings = async ({stageId, teamId}) => {
     }))
     return result;
 }
+
+// Delete a stage
+export const deleteStage = (id, data) => instance.delete(`/stage/${id}`, data);
+// delete an activity
+export const deleteActivity = (id, data) => instance.delete(`/activity/${id}`, data);
+// delete a group
+export const deleteGroup = (id, data) => instance.delete(`/group/${id}`, data);
+export const getAnActivity = async (id) => {
+    const response = await instance.get(`/activity/${id}`);
+    const data = await response.data;
+    return data;
+}
+
+// Update a group
+export const updateGroup = async ({id, groupInfo}) => {
+    const response = await instance.post(`/group/${id}`, groupInfo);
+    const data = await response.data;
+    return data;
+}
+// Save stages sequence
+export const saveStagesSequence = (data) => instance.post('/stages', data);
+// Edit a stage
+export const editStage = async ({id, stage}) => {
+    const response = await instance.post(`/stage/${id}`, stage);
+    const data = await response.data;
+    return data
+};
+
+
 
 
 

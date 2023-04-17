@@ -1,5 +1,5 @@
 import websocket, { Socket, connect } from 'socket.io-client';
-import { useRef, useEffect, useState, useCallback } from 'react';
+import { useRef, useEffect, useState, useCallback, useContext } from 'react';
 import { useFetcher, useNavigate, useParams } from 'react-router-dom';
 import { Box, Button, IconButton, Fab, Tooltip, Backdrop, CircularProgress, Typography } from '@mui/material';
 import { Mic, MicOff, ExitToApp, Groups2 } from '@mui/icons-material';
@@ -9,6 +9,7 @@ import { useMutation } from 'react-query';
 import freeice from 'freeice';
 import AvatarGroup from 'react-avatar-group';
 import randomColor from 'randomcolor';
+import context from '../context';
 
 export default function MainRoomContent(pageMainRoomProps) {
     const [peers, setPeers] = useStateWithCallback([]);// clients
@@ -19,8 +20,6 @@ export default function MainRoomContent(pageMainRoomProps) {
     const localMediaStream = useRef(null);
     const groupId = pageMainRoomProps.groupId;
     const {activityId:roomID} = useParams();
-    // console.log('roomId', activityId)
-    // const roomID = pageMainRoomProps.activityId;
     const user = {
         name: localStorage.getItem('userName'),
         id: localStorage.getItem('userId'),
@@ -38,6 +37,8 @@ export default function MainRoomContent(pageMainRoomProps) {
     const [audioChunks, setAudioChunks] = useState(null);
     const [audio, setAudio] = useState(null);
     const mimeType = "audio/wav";
+    const {stageInfo, checkingStage} = useContext(context);
+    const [teamRoom, setTeamRoom] = useState(null);
 
     const {mutate} = useMutation(createRecord, {
         onSuccess: () => {
@@ -81,6 +82,11 @@ export default function MainRoomContent(pageMainRoomProps) {
             })
             // socket emit JOIN socket io
             wsRef.current.emit('joinRoom', {roomID, user})
+            // Listen for grouping team id
+            wsRef.current.on('openGroupDiscuss', ({team}) => {
+                console.log('teamRoom', team)
+                setTeamRoom(team)
+            })
 
         }
     
@@ -276,6 +282,16 @@ export default function MainRoomContent(pageMainRoomProps) {
         }
     }, [peers]);
 
+    useEffect(() => {
+        if(checkingStage !== undefined) {
+            if(checkingStage.grouping === true && checkingStage.stageChecked === true) {
+                let teamDetail = stageInfo[checkingStage.stageOrder-1].teams
+                wsRef.current.emit('openGroupDiscuss', {roomId: roomID, teamDetail})
+            }
+            console.log('stageInfo', stageInfo)
+        }
+    }, [checkingStage])
+
     const onClickGroupDiscussion = () => {
         let room = roomID;
         setBackDropOpen(true);
@@ -333,11 +349,13 @@ export default function MainRoomContent(pageMainRoomProps) {
                         <ExitToApp sx={{fontSize:34, color:'white'}} />
                     </Fab>
                 </Tooltip>
+                {teamRoom ? 
                 <Tooltip title="前往分組討論">
                     <Fab onClick={onClickGroupDiscussion} aria-label="leave" sx={{color:'#EEF1F4'}} style={{position:'absolute', right:120, bottom:40}}>
                         <Groups2 sx={{fontSize:34, color:'#2B3143'}} />
                     </Fab>
-                </Tooltip>
+                </Tooltip> : ""
+                }
                 <Backdrop
                     sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
                     open={backDropOpen}
