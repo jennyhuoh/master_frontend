@@ -1,17 +1,45 @@
 import websocket, { Socket, connect } from 'socket.io-client';
 import { useRef, useEffect, useState, useCallback, useContext } from 'react';
 import { useFetcher, useNavigate, useParams } from 'react-router-dom';
-import { Box, Button, IconButton, Fab, Tooltip, Backdrop, CircularProgress, Typography } from '@mui/material';
-import { Mic, MicOff, ExitToApp, Groups2 } from '@mui/icons-material';
+import { Box, Button, IconButton, Fab, Tooltip, Backdrop, CircularProgress, Typography, AppBar, Drawer, Divider, TextField } from '@mui/material';
+import { Mic, MicOff, ExitToApp, Groups2, CastForEducation, Textsms, ChevronLeft, ChevronRight, Send } from '@mui/icons-material';
 import { useStateWithCallback } from '../hooks/useStateWithCallback';
 import { createRecord } from '../features/api';
 import { useMutation } from 'react-query';
+import { styled, useTheme } from "@mui/material/styles";
 import freeice from 'freeice';
 import AvatarGroup from 'react-avatar-group';
 import randomColor from 'randomcolor';
 import context from '../context';
 
+const drawerWidth = 300;
+const AppBars = styled(AppBar, {
+  shouldForwardProp: (prop) => prop !== 'open',
+})(({ theme, open }) => ({
+  transition: theme.transitions.create(['margin', 'width'], {
+    easing: theme.transitions.easing.sharp,
+    duration: theme.transitions.duration.leavingScreen,
+  }),
+  ...(open && {
+    // width: `calc(100% - ${drawerWidth}px)`,
+    transition: theme.transitions.create(['margin', 'width'], {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    marginRight: drawerWidth
+  }),
+}));
+const DrawerHeader = styled('div')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  padding: theme.spacing(0, 1),
+  // necessary for content to be below app bar
+  ...theme.mixins.toolbar,
+  justifyContent: 'flex-start',
+}));
+
 export default function MainRoomContent(pageMainRoomProps) {
+    const theme = useTheme();
     const [peers, setPeers] = useStateWithCallback([]);// clients
     const wsRef = useRef(null);// socket
     const peersRef = useRef([]);
@@ -39,12 +67,11 @@ export default function MainRoomContent(pageMainRoomProps) {
     const mimeType = "audio/wav";
     const {stageInfo, checkingStage} = useContext(context);
     const [teamRoom, setTeamRoom] = useState(null);
+    const [chatOpen, setChatOpen] = useState(false);
+    const [message, setMessage] = useState("");
+    const [allMessages, setAllMessages] = useState([]);
 
-    const {mutate} = useMutation(createRecord, {
-        onSuccess: () => {
-
-        }
-    })
+    const {mutate} = useMutation(createRecord)
 
     const addNewPeer = useCallback((newPeer, cb) => {
         const lookingFor = peers.find((peer) => peer.id === newPeer.iD);
@@ -86,6 +113,14 @@ export default function MainRoomContent(pageMainRoomProps) {
             wsRef.current.on('openGroupDiscuss', ({team}) => {
                 console.log('teamRoom', team)
                 setTeamRoom(team)
+            })
+            // Listen for messages
+            wsRef.current.on('message', ({userName, message, time}) => {
+                setAllMessages((prev) => [...prev, {
+                    name: userName,
+                    message: message,
+                    time: time
+                }])
             })
 
         }
@@ -299,15 +334,53 @@ export default function MainRoomContent(pageMainRoomProps) {
         setTimeout(() => {
             setBackDropOpen(false)
         }, 1000)
-        navigate(`/mainRoom/${groupId}/eeb225b1-5764-4d88-b098-0a40587759ed`)
+        navigate(`/mainRoom/${groupId}/${teamRoom}`)
         wsRef.current.emit('leave', {room})
         window.location.reload(true);
     }
 
+    const onClickBackToMain = () => {
+        let room = roomID;
+        setBackDropOpen(true);
+        localStorage.setItem('discussType', 'all');
+        setTimeout(() => {
+            setBackDropOpen(false)
+        }, 1000)
+        setTeamRoom(null);
+        navigate(`/mainRoom/${groupId}/${localStorage.getItem('mainRoomId')}`)
+        wsRef.current.emit('leave', {room})
+        window.location.reload(true);
+    }
+
+    const handleChatOpen = () => {
+        setChatOpen(true)
+    }
+    const handleChatClose = () => {
+        setChatOpen(false)
+    }
+
+    const onClickSendMsg = () => {
+        console.log('message', message)
+        if(message !== "") {
+            let now = new Date()
+            let minutes = (now.getMinutes() < 10 ? '0' : '') + now.getMinutes();
+            let time = now.getHours() + ':' + minutes;
+            wsRef.current.emit('message', {
+                userId: localStorage.getItem('userId'),
+                userName: localStorage.getItem('userName'),
+                message: message,
+                time: time.toString(),
+                room: roomID
+            })
+            setMessage("");
+        }
+    }
+
     if(true){
         return(
+            <>
+            <AppBars position="fixed" open={chatOpen}></AppBars>
             <Box>
-                {/* {audio && <audio src={audio} controls />} */}
                 {whoIsTalking ? 
                 <Box style={{display:'flex', flexDirection:'column', alignItems:'center'}}>
                 {whoIsTalking.map((member) => {
@@ -315,8 +388,7 @@ export default function MainRoomContent(pageMainRoomProps) {
                 })}
                 </Box>
                 : ""}
-                <Box style={{display:'flex', flexWrap:'wrap', gap:'80px', padding:'30px 150px'}}>
-                    {/* {console.log('peers', peers)} */}
+                <Box style={{display:'flex', flexWrap:'wrap', gap:'0 90px', padding:'20px 160px', marginTop:'20px', overflowY:'scroll', minHeight:'75vh'}}>
                     {peers.map((peer) => {
                         return(
                         <div key={peer.id} style={{display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center'}}>
@@ -344,15 +416,28 @@ export default function MainRoomContent(pageMainRoomProps) {
                         )
                     })}
                 </Box>
+            </Box>
                 <Tooltip title="離開">
-                    <Fab onClick={() => {navigate('/home')}} aria-label="leave" color="error" style={{position:'absolute', right:40, bottom:40}}>
-                        <ExitToApp sx={{fontSize:34, color:'white'}} />
+                    <Fab onClick={() => {navigate('/home')}} aria-label="leave" color="error" style={{position:'fixed', right:40, bottom:40}}>
+                        <ExitToApp sx={{fontSize:32, color:'white'}} />
+                    </Fab>
+                </Tooltip>
+                <Tooltip title="聊天室">
+                    <Fab onClick={handleChatOpen} aria-label="leave" color="info" style={{position:'fixed', right:120, bottom:40}}>
+                        <Textsms sx={{fontSize:30, color:'white'}} />
                     </Fab>
                 </Tooltip>
                 {teamRoom ? 
                 <Tooltip title="前往分組討論">
-                    <Fab onClick={onClickGroupDiscussion} aria-label="leave" sx={{color:'#EEF1F4'}} style={{position:'absolute', right:120, bottom:40}}>
+                    <Fab onClick={onClickGroupDiscussion} aria-label="leave" sx={{color:'#EEF1F4'}} style={{position:'fixed', right:200, bottom:40}}>
                         <Groups2 sx={{fontSize:34, color:'#2B3143'}} />
+                    </Fab>
+                </Tooltip> : ""
+                }
+                {localStorage.getItem('discussType') === 'group' ? 
+                <Tooltip title="回主會議室">
+                    <Fab onClick={onClickBackToMain} aria-label="leave" sx={{color:'#EEF1F4'}} style={{position:'fixed', right:200, bottom:40}}>
+                        <CastForEducation sx={{fontSize:34, color:'#2B3143'}} />
                     </Fab>
                 </Tooltip> : ""
                 }
@@ -362,7 +447,67 @@ export default function MainRoomContent(pageMainRoomProps) {
                 >
                     <CircularProgress color="inherit" />
                 </Backdrop>
-            </Box>
+            
+            <Drawer
+                sx={{
+                width: drawerWidth,
+                flexShrink: 0,
+                "& .MuiDrawer-paper": {
+                    width: drawerWidth,
+                    boxSizing: "border-box"
+                }
+                }}
+                variant="persistent"
+                anchor="right"
+                open={chatOpen}
+                PaperProps={{
+                    sx: {
+                        backgroundColor: "#5A81A8",
+                        color: "white",
+                        borderRadius: '35px 0 0 35px'
+                    }
+                }}
+            >
+                <DrawerHeader>
+                    <IconButton onClick={handleChatClose} color="secondary">
+                        {theme.direction === "rtl" ? (
+                        <ChevronLeft />
+                        ) : (
+                        <ChevronRight />
+                        )}
+                    </IconButton>
+                </DrawerHeader>
+                <Divider />
+                <Box style={{display:'flex', flexDirection:'column', height:'100%'}}>
+                    <Box sx={{p:'0 10px'}}>
+                    {allMessages.length !== 0 && allMessages?.map((message) => (
+                    <Box sx={{mt:'20px'}}>
+                        <Typography style={{fontSize:'12px'}}>{message.name}</Typography>
+                        <Box style={{display:'flex', alignItems:'baseline', marginTop:'2px'}}>
+                            <Typography style={{backgroundColor:'#EEF1F4', borderRadius:'6px', padding:'8px 15px', color:'black'}}>{message.message}</Typography>
+                            <Typography style={{marginBottom:'-15px', marginLeft:'8px', fontSize:'12px'}}>{message.time}</Typography>
+                        </Box>
+                    </Box>
+                    ))}
+                    </Box>
+                    <Box style={{position:'fixed', width:'290px', bottom:8, display:'flex', alignItems:'center', margin:'0 5px', justifyContent:'space-around'}}>
+                        <TextField 
+                            onKeyDown={(ev) => {
+                                if(ev.key === 'Enter'){onClickSendMsg()}
+                            }} 
+                            value={message} 
+                            onChange={(e) => setMessage(e.target.value)} 
+                            InputProps={{sx: {borderRadius:'50px', width:'230px', color:'white'}}} 
+                            maxRows={5} 
+                            color="secondary" 
+                            id="fullWidth" 
+                            focused 
+                        />
+                        <Fab color="primary" size="small" disableFocusRipple disableRipple onClick={onClickSendMsg}><Send sx={{fontSize:22}} /></Fab>
+                    </Box>
+                </Box>
+            </Drawer>
+        </>
         );
     } else{
         return(

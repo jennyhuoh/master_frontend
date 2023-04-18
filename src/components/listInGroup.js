@@ -30,6 +30,7 @@ const Rows = (props) => {
         window.open(url, '_blank', 'noopener,noreferrer');
     };
     const onClickStartDiscuss = () => {
+        localStorage.setItem('mainRoomId', props.row.id)
         openInNewTab(`http://localhost:3000/mainRoom/${props.groupId}/${props.row.id}`)
         localStorage.setItem('discussType', 'all');
     }
