@@ -127,6 +127,12 @@ export const getRecordings = async ({stageId, teamId}) => {
     }))
     return result;
 }
+// Get single user's activities
+export const getUserActivities = async(id) => {
+    const response = await instance.get(`/${id}/activities`);
+    const data = await response.data;
+    return data;
+}
 
 // Delete a stage
 export const deleteStage = (id, data) => instance.delete(`/stage/${id}`, data);
