@@ -109,7 +109,7 @@ export default function DiscussGroupInfo(appProps) {
                                 />
                             </LocalizationProvider>
                         </Grid>
-                        {localStorage.getItem('role') === 'teacher' ?
+                        {groupInfo?.owner.userName === localStorage.getItem('userName') ?
                         <Grid item xs={6}>
                             <p style={{color:'grey', fontSize:'4px'}}>4.參與討論成員</p>
                             <Select
@@ -130,7 +130,7 @@ export default function DiscussGroupInfo(appProps) {
                         }
                         
                     </Grid>
-                    {localStorage.getItem('role') === 'teacher' &&
+                    {groupInfo?.owner.userName === localStorage.getItem('userName') &&
                     <Box style={{display:'flex', justifyContent:'flex-end', paddingRight:'20px'}}>
                         <Button variant="outlined" color='error' onClick={() => {setDeleteModalOpen(true)}}>刪除</Button>
                         <Button variant="contained" color='primary' style={{marginLeft:'20px', fontWeight:'bold'}} onClick={onClickSaveInfo}>儲存更改</Button>

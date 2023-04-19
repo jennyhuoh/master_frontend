@@ -42,10 +42,10 @@ const Rows = (props) => {
         // key={row.name}
         sx={{ '&:last-child td, &:last-child th': { border: 0 }, '&:hover':{ backgroundColor:'#EEF1F4', cursor: 'pointer'} }}
         >
-            <TableCell onClick={() => {navigate('/blankPage')}} style={{width:'38%', verticalAlign:'baseline'}} component="th" scope="row">
+            <TableCell onClick={() => {navigate(`/discussResult/${props.row.id}`)}} style={{width:'38%', verticalAlign:'baseline'}} component="th" scope="row">
                 {props.row.activityName}
             </TableCell>
-            <TableCell onClick={() => {navigate('/blankPage')}} style={{width:'35%', verticalAlign:'baseline'}}>{props.row.activityStartDate}</TableCell>
+            <TableCell onClick={() => {navigate(`/discussResult/${props.row.id}`)}} style={{width:'35%', verticalAlign:'baseline'}}>{props.row.activityStartDate}</TableCell>
             {localStorage.getItem('role') === 'teacher' ?
             <>
             <TableCell style={{width:'17%', verticalAlign:'baseline'}} align="right">
@@ -62,9 +62,9 @@ const Rows = (props) => {
             </TableCell>
             </> :
             <>
-            <TableCell onClick={() => {navigate('/blankPage')}} style={{width:'5%', verticalAlign:'baseline'}} align="right">
+            <TableCell onClick={() => {navigate(`/discussResult/${props.row.id}`)}} style={{width:'5%', verticalAlign:'baseline'}} align="right">
             </TableCell>
-            <TableCell onClick={() => {navigate('/blankPage')}} style={{width:'5%', verticalAlign:'baseline'}} align="center">
+            <TableCell onClick={() => {navigate(`/discussResult/${props.row.id}`)}} style={{width:'5%', verticalAlign:'baseline'}} align="center">
             </TableCell>
             <TableCell style={{width:'17%', verticalAlign:'baseline'}} align="center">
             {dayjs().isBefore(props.row.activityExpiryDate) ? 
@@ -74,7 +74,6 @@ const Rows = (props) => {
             </TableCell> 
             </>
             }
-            
         </TableRow>
         <Modal
           open={alertDeleteOpen}

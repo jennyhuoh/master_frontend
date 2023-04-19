@@ -52,7 +52,7 @@ export default function Header() {
         <Box sx={{ flexGrow: 1 }}>
             <AppBar position="fixed" color="warning" open={openDrawer}>
                 <Toolbar>
-                <IconButton
+                {/* <IconButton
                     size="large"
                     edge="start"
                     color="inherit"
@@ -61,7 +61,7 @@ export default function Header() {
                     onClick={handleDrawerOpen}
                 >
                     <Menu />
-                </IconButton>
+                </IconButton> */}
                 <Typography variant="h6" component="div" sx={{ flexGrow: 1, letterSpacing:1.8 }}>
                     Online Cooperative Discussion
                 </Typography>

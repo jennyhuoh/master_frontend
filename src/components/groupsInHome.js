@@ -69,7 +69,7 @@ const RecentCard = (props) => {
                     <Diversity3 sx={{color:'grey', mr:1.5}} fontSize="small" />
                     <Typography style={{fontSize:'14px', letterSpacing:'1px', fontWeight:'bold'}}> {props.groupName}</Typography>
                 </Box>
-                <Button variant="contained" style={{alignSelf:'end', marginTop:'5px'}} onClick={onClickStartDiscuss}>開始討論</Button>
+                <Button variant="contained" style={{alignSelf:'end', marginTop:'7px'}} onClick={onClickStartDiscuss}>開始討論</Button>
             </CardContent>
         </Card>
     );
@@ -129,7 +129,7 @@ export default function GroupsInHome() {
         return(
             <Box style={{padding:'12vh 40px'}}>
                 <Box>
-                    <Typography style={{fontSize:'20px', fontWeight:'bold', marginBottom:'18px'}}>近期討論活動</Typography>
+                    <Typography style={{fontSize:'20px', fontWeight:'bold', marginBottom:'16px'}}>近期討論活動</Typography>
                     <Stack
                         direction='row'
                         spacing={3}
@@ -144,7 +144,7 @@ export default function GroupsInHome() {
                     </Stack>
                 </Box> 
                 <Box>
-                    <Typography style={{fontSize:'20px', fontWeight:'bold', marginBottom:'18px', marginTop:'10px'}}>討論活動群組</Typography>
+                    <Typography style={{fontSize:'20px', fontWeight:'bold', marginBottom:'16px', marginTop:'10px'}}>討論活動群組</Typography>
                     <Stack
                         direction='row'
                         spacing={3}

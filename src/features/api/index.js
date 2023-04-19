@@ -127,6 +127,12 @@ export const getRecordings = async ({stageId, teamId}) => {
     }))
     return result;
 }
+// Get an activity
+export const getAnActivity = async (id) => {
+    const response = await instance.get(`/activity/${id}`);
+    const data = await response.data;
+    return data;
+}
 // Get single user's activities
 export const getUserActivities = async(id) => {
     const response = await instance.get(`/${id}/activities`);
@@ -140,11 +146,6 @@ export const deleteStage = (id, data) => instance.delete(`/stage/${id}`, data);
 export const deleteActivity = (id, data) => instance.delete(`/activity/${id}`, data);
 // delete a group
 export const deleteGroup = (id, data) => instance.delete(`/group/${id}`, data);
-export const getAnActivity = async (id) => {
-    const response = await instance.get(`/activity/${id}`);
-    const data = await response.data;
-    return data;
-}
 
 // Update a group
 export const updateGroup = async ({id, groupInfo}) => {
