@@ -479,15 +479,23 @@ export default function MainRoomContent(pageMainRoomProps) {
                 </DrawerHeader>
                 <Divider />
                 <Box style={{display:'flex', flexDirection:'column', height:'100%'}}>
-                    <Box sx={{p:'0 10px'}}>
+                    <Box sx={{p:'0 10px'}} style={{display:'flex', flexDirection:'column'}}>
                     {allMessages.length !== 0 && allMessages?.map((message) => (
+                    message.name === localStorage.getItem('userName') ?
+                    <Box sx={{mt:'20px'}} style={{alignSelf:'end', display:'flex', flexDirection:'column'}}>
+                        <Typography style={{fontSize:'12px', alignSelf:'end', marginRight:'2px'}}>{message.name}</Typography>
+                        <Box style={{display:'flex', alignItems:'baseline', marginTop:'2px'}}>
+                            <Typography style={{marginRight:'8px', fontSize:'12px', alignSelf:'end'}}>{message.time}</Typography>
+                            <Typography style={{backgroundColor:'#F6BD58', borderRadius:'6px', padding:'8px 15px', color:'black'}}>{message.message}</Typography>
+                        </Box>
+                    </Box> :
                     <Box sx={{mt:'20px'}}>
-                        <Typography style={{fontSize:'12px'}}>{message.name}</Typography>
+                        <Typography style={{fontSize:'12px', marginLeft:'2px'}}>{message.name}</Typography>
                         <Box style={{display:'flex', alignItems:'baseline', marginTop:'2px'}}>
                             <Typography style={{backgroundColor:'#EEF1F4', borderRadius:'6px', padding:'8px 15px', color:'black'}}>{message.message}</Typography>
-                            <Typography style={{marginBottom:'-15px', marginLeft:'8px', fontSize:'12px'}}>{message.time}</Typography>
+                            <Typography style={{marginLeft:'8px', fontSize:'12px', alignSelf:'end'}}>{message.time}</Typography>
                         </Box>
-                    </Box>
+                    </Box> 
                     ))}
                     </Box>
                     <Box style={{position:'fixed', width:'290px', bottom:8, display:'flex', alignItems:'center', margin:'0 5px', justifyContent:'space-around'}}>
@@ -497,7 +505,7 @@ export default function MainRoomContent(pageMainRoomProps) {
                             }} 
                             value={message} 
                             onChange={(e) => setMessage(e.target.value)} 
-                            InputProps={{sx: {borderRadius:'50px', width:'230px', color:'white'}}} 
+                            InputProps={{sx: {borderRadius:'50px', width:'230px', color:'white', maxLength: 10}}} 
                             maxRows={5} 
                             color="secondary" 
                             id="fullWidth" 
