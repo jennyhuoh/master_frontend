@@ -153,13 +153,9 @@ export default function GroupsInHome() {
                         overflowX:'scroll'
                     }}
                     >
-                        <Button component={Link} to="/addGroup" variant="contained" color="secondary" style={{width: 220, height: 150, borderRadius:'5px', display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', border:'1.5px #BEBEBE dashed'}}>
-                            <AddCircleOutline color="disabled" style={{fontSize:'55px', marginBottom:'8px'}} />
-                            <Typography color="gray">新增討論活動群組</Typography>
-                        </Button> 
-                        {groups ? 
-                        groups.map((group) => <Groups meetingId={group.groupMeetingId} id={group.id} key={group.groupMeetingId} name={group.groupName} members={group.userProfiles} endTime={group.groupExpiryDate} activityNum={group.activityNum} />)
-                        : <CircularProgress color="inherit" /> }
+                    {groups ? 
+                    groups.map((group) => <Groups meetingId={group.groupMeetingId} id={group.id} key={group.groupMeetingId} name={group.groupName} members={group.userProfiles} endTime={group.groupExpiryDate} activityNum={group.activityNum} />)
+                    : <CircularProgress color="inherit" /> }
                     </Stack>
                 </Box> 
                 <Box>

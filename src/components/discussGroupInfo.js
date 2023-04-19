@@ -109,6 +109,7 @@ export default function DiscussGroupInfo(appProps) {
                                 />
                             </LocalizationProvider>
                         </Grid>
+                        {localStorage.getItem('role') === 'teacher' ?
                         <Grid item xs={6}>
                             <p style={{color:'grey', fontSize:'4px'}}>4.參與討論成員</p>
                             <Select
@@ -117,12 +118,24 @@ export default function DiscussGroupInfo(appProps) {
                              isMulti    
                              onChange={(values) => setSelectedMembers(values)}
                             />
-                        </Grid>
+                        </Grid> :
+                        <Grid item xs={6}>
+                            <p style={{color:'grey', fontSize:'4px'}}>4.參與討論成員</p>
+                            <Select
+                                options={memberOption}
+                                defaultValue={defaultOption}
+                                isMulti
+                            />
+                        </Grid> 
+                        }
+                        
                     </Grid>
+                    {localStorage.getItem('role') === 'teacher' &&
                     <Box style={{display:'flex', justifyContent:'flex-end', paddingRight:'20px'}}>
                         <Button variant="outlined" color='error' onClick={() => {setDeleteModalOpen(true)}}>刪除</Button>
                         <Button variant="contained" color='primary' style={{marginLeft:'20px', fontWeight:'bold'}} onClick={onClickSaveInfo}>儲存更改</Button>
                     </Box>
+                    }
                 </Paper>
             </Box>
             <Snackbar open={alertOpen} autoHideDuration={6000} onClose={onCloseAlert}>

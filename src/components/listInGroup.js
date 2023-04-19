@@ -46,10 +46,12 @@ const Rows = (props) => {
                 {props.row.activityName}
             </TableCell>
             <TableCell onClick={() => {navigate('/blankPage')}} style={{width:'35%', verticalAlign:'baseline'}}>{props.row.activityStartDate}</TableCell>
+            {localStorage.getItem('role') === 'teacher' ?
+            <>
             <TableCell style={{width:'17%', verticalAlign:'baseline'}} align="right">
             {dayjs().isBefore(props.row.activityExpiryDate) ? 
-                <Button variant="contained" onClick={onClickStartDiscuss}>開始討論</Button> :
-                <Button variant="contained" disabled>開始討論</Button> 
+                <Button variant="contained" style={{width:'90px'}} onClick={onClickStartDiscuss}>開始討論</Button> :
+                <Button variant="contained" style={{width:'90px'}} disabled>開始討論</Button> 
             }
             </TableCell>
             <TableCell style={{width:'5%', verticalAlign:'baseline'}} align="center">
@@ -58,6 +60,21 @@ const Rows = (props) => {
             <TableCell style={{width:'5%', verticalAlign:'baseline'}} align="center">
                 <Button variant="outlined" color='error' onClick={() => setAlertDeleteOpen(true)}>刪除</Button>
             </TableCell>
+            </> :
+            <>
+            <TableCell onClick={() => {navigate('/blankPage')}} style={{width:'5%', verticalAlign:'baseline'}} align="right">
+            </TableCell>
+            <TableCell onClick={() => {navigate('/blankPage')}} style={{width:'5%', verticalAlign:'baseline'}} align="center">
+            </TableCell>
+            <TableCell style={{width:'17%', verticalAlign:'baseline'}} align="center">
+            {dayjs().isBefore(props.row.activityExpiryDate) ? 
+                <Button variant="contained" onClick={onClickStartDiscuss} style={{width:'90px'}}>開始討論</Button> :
+                <Button variant="contained" style={{width:'90px'}} disabled>開始討論</Button> 
+            }
+            </TableCell> 
+            </>
+            }
+            
         </TableRow>
         <Modal
           open={alertDeleteOpen}
@@ -664,10 +681,12 @@ export default function ListInGroup(appProps) {
             <Paper elevation={3} style={{marginTop:'15px', backgroundColor:'white', padding:'2vw', marginBottom:'30px', borderRadius:'10px'}}>
                 <Box style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
                     <div style={{fontWeight:'bold', fontSize:'1.5vw'}}>討論活動列表</div>
+                    {localStorage.getItem('role') === 'teacher' && 
                     <Button variant="contained" color='secondary' style={{fontWeight:'bold'}} onClick={() => {
                         setStages([])
                         setDisplayAddForm(true)
-                    }}><Add sx={{mr:0.8}} fontSize="small" />新增討論活動</Button> 
+                    }}><Add sx={{mr:0.8}} fontSize="small" />新增討論活動</Button>
+                    }
                 </Box>
                 <Divider style={{marginTop:'15px', borderColor:'#707070'}}/>
                 <TableContainer>
