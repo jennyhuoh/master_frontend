@@ -52,7 +52,7 @@ const RecentCard = (props) => {
     };
     const onClickStartDiscuss = () => {
         localStorage.setItem('mainRoomId', props.id)
-        openInNewTab(`http://localhost:3000/mainRoom/${props.groupMeetingId}/${props.id}`)
+        openInNewTab(`http://localhost:3000/mainRoom/${props.meetingId}/${props.id}`)
         localStorage.setItem('discussType', 'all');
     }
     return(

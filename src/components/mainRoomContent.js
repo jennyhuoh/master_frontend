@@ -110,9 +110,10 @@ export default function MainRoomContent(pageMainRoomProps) {
             // socket emit JOIN socket io
             wsRef.current.emit('joinRoom', {roomID, user})
             // Listen for grouping team id
-            wsRef.current.on('openGroupDiscuss', ({team}) => {
+            wsRef.current.on('openGroupDiscuss', ({team, stageId}) => {
                 console.log('teamRoom', team)
                 setTeamRoom(team)
+                localStorage.setItem('stageId', stageId)
             })
             // Listen for messages
             wsRef.current.on('message', ({userName, message, time}) => {
@@ -291,7 +292,7 @@ export default function MainRoomContent(pageMainRoomProps) {
                     console.log('url', audioUrl)
                     console.log('blob', audioBlob)
                     mutate({
-                        stageId:22,
+                        stageId: localStorage.getItem('stageId'),
                         teamId: roomID,
                         data: formData,
                     })
@@ -322,6 +323,8 @@ export default function MainRoomContent(pageMainRoomProps) {
             if(checkingStage.grouping === true && checkingStage.stageChecked === true) {
                 let teamDetail = stageInfo[checkingStage.stageOrder-1].teams
                 wsRef.current.emit('openGroupDiscuss', {roomId: roomID, teamDetail})
+                // console.log('checkingStage', checkingStage);
+                // localStorage.setItem('stageId', checkingStage.id)
             }
             console.log('stageInfo', stageInfo)
         }
