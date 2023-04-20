@@ -14,6 +14,7 @@ import { Item } from './item';
 import context,{ Provider } from '../context';
 import { restrictToHorizontalAxis, restrictToWindowEdges } from "@dnd-kit/modifiers";
 import { GroupItem } from './groupSortableItem';
+import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import dayjs from 'dayjs';
 import Container from './container';
 
@@ -117,9 +118,7 @@ export default function ListInGroup(appProps) {
     const [activeId, setActiveId] = useState(null);
     const [groupModalOpen, setGroupModalOpen] = useState(false);
     const [groupNum, setGroupNum] = useState(Math.floor(localStorage.getItem('usersNum')/3));
-    const [groupItems, setGroupItems] = useState({
-        main: JSON.parse(localStorage.getItem('usersInGroup')), 
-    })
+    const [groupItems, setGroupItems] = useState(JSON.parse(localStorage.getItem('usersInGroup')))
     const [flag, setFlag] = useState(true);
     const [groupResultOpen, setGroupResultOpen] = useState(false);
     const [checkResult, setCheckResult] = useState(false);
@@ -127,6 +126,8 @@ export default function ListInGroup(appProps) {
     const [successAlertOpen, setSuccessAlertOpen] = useState(false);
     let ref = React.createRef();
     const [rows, setRows] = useState(undefined)
+    const [showGrouping, setShowGrouping] = useState(false);
+    const [container, setContainer] = useState({});
     const {data, isLoading, refetch, status} = useQuery(['lists', groupId], () =>
     getActivities(groupId), {
         onSuccess: () => {
@@ -138,28 +139,40 @@ export default function ListInGroup(appProps) {
         setRows(data)
         console.log('data', data)
     }, [data])
-    useEffect(() => {
-        setFlag(false)
-        setGroupItems({main: JSON.parse(localStorage.getItem('usersInGroup'))})
-    }, [groupNum])
+    // useEffect(() => {
+    //     setFlag(false)
+    //     setGroupItems({main: JSON.parse(localStorage.getItem('usersInGroup'))})
+    // }, [groupNum])
 
-    useEffect(() => {
-        if(flag === false) {
-            for(let i = 1; i <= groupNum; i++) {
-                const a = 'container'+i;
-                groupItems[a] = []
-                setGroupItems({...groupItems})
-                setFlag(true)
-            } 
-        }
-    }, [flag])
+    // useEffect(() => {
+    //     if(flag === false) {
+    //         for(let i = 1; i <= groupNum; i++) {
+    //             const a = 'container'+i;
+    //             groupItems[a] = []
+    //             setGroupItems({...groupItems})
+    //             setFlag(true)
+    //         } 
+    //     }
+    // }, [flag])
 
+    // useEffect(() => {
+    //     for(let i = 1; i <= groupNum; i++) {
+    //         const a = 'container'+i;
+    //         groupItems[a] = []
+    //         setGroupItems({...groupItems})
+    //     }
+    // }, [])
     useEffect(() => {
-        for(let i = 1; i <= groupNum; i++) {
-            const a = 'container'+i;
-            groupItems[a] = []
-            setGroupItems({...groupItems})
+        let newArr = [];
+        async function ParseNumIdToString(groupItem) {
+            await Promise.all(groupItem.map(async (item) => {
+                const data = await item
+                data.id = await data.id.toString()
+                newArr.push(data);
+            }))
         }
+        ParseNumIdToString(JSON.parse(localStorage.getItem('usersInGroup')));
+        setGroupItems(newArr)
     }, [])
 
     const sensors = useSensors(
@@ -234,14 +247,14 @@ export default function ListInGroup(appProps) {
         if(activityName!=='') {
             setAddChildActOpen(true);
             setGroupNum(Math.floor(localStorage.getItem('usersNum')/3))
-            for(let i = 1; i <= groupNum; i++) {
-                const a = 'container'+i;
-                groupItems[a] = []
-                setGroupItems({...groupItems})
-                setFlag(true)
-            } 
+            // for(let i = 1; i <= groupNum; i++) {
+            //     const a = 'container'+i;
+            //     groupItems[a] = []
+            //     setGroupItems({...groupItems})
+            //     setFlag(true)
+            // } 
             console.log('num', groupNum);
-            console.log('item', groupItems);
+            // console.log('item', groupItems);
         } else {
             setAlertContent('請先填寫討論活動名稱以及開始時間')
             setAlertName(true);
@@ -424,29 +437,29 @@ export default function ListInGroup(appProps) {
         })
     }
 
-    const onClickSaveGroup = () => {
-        console.log('save', groupItems)
-        if(groupItems['main'].length === 0) {
-            const stage = {
-                stageName: childActName,
-                grouping: true,
-                stageOrder: stages.length+1
-            }
-            // console.log('stage', stage);
-            mutate(stage);
-            // setAddChildActOpen(false);
-            setChildActName('');
-            setGroupResultOpen(true);
-            console.log('stages', stages)
-        } else {
-            setAlertContent('組員尚未分配完成')
-            setAlertName(true);
-        }
-    }
+    // const onClickSaveGroup = () => {
+    //     // console.log('save', groupItems)
+    //     if(columns['main'].length === 0) {
+    //         const stage = {
+    //             stageName: childActName,
+    //             grouping: true,
+    //             stageOrder: stages.length+1
+    //         }
+    //         // console.log('stage', stage);
+    //         mutate(stage);
+    //         // setAddChildActOpen(false);
+    //         setChildActName('');
+    //         setGroupResultOpen(true);
+    //         console.log('stages', stages)
+    //     } else {
+    //         setAlertContent('組員尚未分配完成')
+    //         setAlertName(true);
+    //     }
+    // }
 
     function ChildModal() {
         const onClickMinus = () => {
-            if(groupNum > 2){
+            if(groupNum >= 2){
                 setGroupNum(groupNum-1)
             }
         }
@@ -456,83 +469,57 @@ export default function ListInGroup(appProps) {
             }
             console.log(groupItems)
         }
-        const containerStyle = {
-            background: "#5A81A8",
-            margin: 10,
-            minHeight: '65px',
-            display: 'flex',
-            borderRadius: '3px',
-            flexWrap:'wrap'
-          };
-          
-        const containerStyle2 = {
-            background: "#EEF1F4",
-            padding: '10 10 10 0',
-            margin: 10,
-            minHeight: '120px',
-            display: 'flex',
-            borderRadius: '2px',
-            flexWrap:'wrap'
-        };
+        const onClickGroupNum = () => {
+            let obj = {};
+            obj.main = {
+                name: "main",
+                items: groupItems
+            }
+            for(let i = 1; i <= groupNum; i++) {
+                const a = 'container'+i;
+                obj['container'+i] = {
+                 name: '組別'+i,
+                 items: []   
+                }
+            }
+            setContainer(obj)
+            setAddChildActOpen(false)
+            setGroupModalOpen(false)
+            setShowGrouping(true)
+        }
         return(
             <React.Fragment>
                 <Modal
                     open={groupModalOpen}
                 >
-                    <Box style={{position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 800, backgroundColor: 'white', boxShadow: 24, padding:'20px 25px', borderRadius:'5px', display:'flex', flexDirection:'column', alignItems:'center'}}>
-                        <Box style={{display:'flex'}}>
+                    <Box style={{position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 260, backgroundColor: 'white', boxShadow: 24, padding:'30px 25px', borderRadius:'5px', display:'flex', flexDirection:'column', alignItems:'center'}}>
+                        <Box style={{display:'flex', justifyContent:'center', alignItems:'center', flexDirection:'column'}}>
+                            <Typography style={{fontWeight:'bold', fontSize:'18px', marginBottom:'10px'}}>學生人數 {localStorage.getItem('usersNum')} 人</Typography>
                             {/* <Typography sx={{fontWeight:'bold', alignSelf:'center'}}>分組樣板 :</Typography> */}
-                            <Box style={{display:'flex', marginLeft:'550px', alignItems:'center'}}><Typography>學生人數 {localStorage.getItem('usersNum')} 人，組數: </Typography><IconButton style={{color:'#2B3143'}} onClick={onClickMinus}><RemoveCircle /></IconButton>{groupNum}<IconButton style={{color:'#2B3143'}} onClick={onClickAdd}><AddCircle /></IconButton></Box>
+                            <Box style={{display:'flex', alignItems:'center', marginBottom:'10px'}}><Typography style={{fontSize:'18px'}}>組數: </Typography><IconButton style={{color:'#2B3143'}} onClick={onClickMinus}><RemoveCircle /></IconButton>{groupNum}<IconButton style={{color:'#2B3143'}} onClick={onClickAdd}><AddCircle /></IconButton></Box>
                         </Box>
-                        <DndContext
-                            sensors={sensorsChild}
-                            collisionDetection={closestCenter}
-                            onDragStart={handleDragStart}
-                            onDragOver={handleDragOver}
-                            onDragEnd={handleDragEndChild}
-                            measuring={measuringConfig}
-                        >
-                            <Grid container>
-                                <Grid item xs={6}>
-                                {Object.keys(groupItems).map((key, index) => {
-                                if(key !== 'main'){
-                                    return(
-                                        <Grid container key={key} style={{display:'flex'}}>
-                                            <Grid item xs={2} style={{background: "#5A81A8", marginTop: 10, height: '65px', display: 'flex', borderRadius: '3px', justifyContent:'center', alignItems:'center', color:'white', padding:5}}>{index}</Grid>
-                                            <Grid item xs={10}>
-                                            <Container style={containerStyle} key={key} id={key} items={groupItems[key]} />
-                                            </Grid>
-                                        </Grid>
-                                    )
-                                }
-                                })}
-                                </Grid>
-                                <Grid item xs={6}>
-                                    <Container style={containerStyle2} id="main" items={groupItems["main"]} />
-                                </Grid>
-                            </Grid>
-                            {/* <DragOverlay>{activeId ? <GroupItem id={activeId} /> : null}</DragOverlay> */}
-                        </DndContext>
-                        <Box style={{display:'flex', marginLeft:'620px', marginTop:'10px'}}>
-                            <Button onClick={() => setGroupModalOpen(false)} variant="contained" color='secondary' style={{fontWeight:'bold'}}>取消</Button> 
-                            <Button onClick={onClickSaveGroup} variant="contained" style={{fontWeight:'bold', marginLeft:'15px'}}>儲存分組</Button> 
+                        <Box style={{display:'flex', marginTop:'10px', width:'100%', justifyContent:'space-between'}}>
+                            <Button onClick={() => setGroupModalOpen(false)} variant="contained" color='secondary' style={{fontWeight:'bold'}}>返回</Button> 
+                            <Button onClick={onClickGroupNum} variant="contained" style={{fontWeight:'bold', marginLeft:'15px'}}>下一步</Button> 
                         </Box>
-                        <ResultModal />
+                        {/* <ResultModal /> */}
                     </Box>
                 </Modal>
             </React.Fragment>
         );
+        
     }
     const onCloseResultModal = async () => {
+        setShowGrouping(false)
         var teams = []
         let stageId = stages[stages.length-1].id;
         console.log('stageid', stageId)
-        await Promise.all(Object.keys(groupItems).map((key, index) => {
+        await Promise.all(Object.keys(container).map((key, index) => {
             if(key !== 'main') {
                 const team = {
-                    teamName: `${index}`,
+                    teamName: container[key].name,
                     teamOrder: index,
-                    teamMembers: groupItems[key]
+                    teamMembers: container[key].items
                 }
                 teams.push(team);
             }
@@ -578,10 +565,10 @@ export default function ListInGroup(appProps) {
                             </TableRow>
                             </TableHead>
                             <TableBody>
-                                {Object.keys(groupItems).map((key, index) => {
+                                {Object.keys(container).map((key, index) => {
                                     if(key !== 'main'){
                                         return(
-                                        <GroupResult key={key} groupName={index} members={groupItems[key]} />
+                                        <GroupResult key={key} groupName={container[key].name} members={container[key].items} />
                                         )
                                     }
                                 })}
@@ -611,6 +598,172 @@ export default function ListInGroup(appProps) {
             id: appProps.groupId,
             activity: data
         })
+    }
+
+    function GroupingAction() {
+        // const tasks = groupItems;
+        useEffect(() => {
+            console.log('container', container)
+        }, [container])
+        console.log('from localStorage', localStorage.getItem('usersInGroup'))
+        console.log('groupItems', groupItems);
+        const taskStatus = container;
+        const [columns, setColumns] = useState(taskStatus);
+
+        const onDragEnd = (result, columns, setColumns) => {
+            if (!result.destination) return;
+            const { source, destination } = result;
+          
+            if (source.droppableId !== destination.droppableId) {
+              const sourceColumn = columns[source.droppableId];
+              const destColumn = columns[destination.droppableId];
+              const sourceItems = [...sourceColumn.items];
+              const destItems = [...destColumn.items];
+              const [removed] = sourceItems.splice(source.index, 1);
+              destItems.splice(destination.index, 0, removed);
+              setColumns({
+                ...columns,
+                [source.droppableId]: {
+                  ...sourceColumn,
+                  items: sourceItems
+                },
+                [destination.droppableId]: {
+                  ...destColumn,
+                  items: destItems
+                }
+                });
+            } else {
+                const column = columns[source.droppableId];
+                const copiedItems = [...column.items];
+                const [removed] = copiedItems.splice(source.index, 1);
+                copiedItems.splice(destination.index, 0, removed);
+                setColumns({
+                  ...columns,
+                  [source.droppableId]: {
+                    ...column,
+                    items: copiedItems
+                  }
+                });
+            }
+        };
+        useEffect(() => {
+            console.log('columns', columns);
+        }, [columns])
+        const onClickFinishGrouping = () => {
+            if(columns['main'].items.length === 0) {
+                setContainer(columns)
+                const stage = {
+                    stageName: childActName,
+                    grouping: true,
+                    stageOrder: stages.length+1
+                }
+                // console.log('stage', stage);
+                mutate(stage);
+                // setAddChildActOpen(false);
+                setChildActName('');
+                setGroupResultOpen(true);
+                console.log('stages', stages)
+            } else {
+                setAlertContent('組員尚未分配完成')
+                setAlertName(true);
+            } 
+        }
+          return (
+            <div>
+              <div
+                style={{ display: "flex", height: "100%", marginTop:'20px', backgroundColor:'#EEF1F4', overflowX:'scroll' }}
+              >
+                <DragDropContext
+                  onDragEnd={(result) => onDragEnd(result, columns, setColumns)}
+                >
+                  {Object.entries(columns).map(([columnId, column], index) => {
+                    return (
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                        }}
+                        key={columnId}
+                      >
+                        {column.name !== 'main' ?
+                        <div style={{backgroundColor:'#5A81A8', width:150, height: 50, padding: 4, display:'flex', justifyContent:'center', alignItems:'center', fontSize:'18px', fontWeight:'semi-bold', color:'white', letterSpacing:'1px', marginTop: 8}}>{column.name}</div>
+                        : <div style={{width:150, height: 50, padding: 4, marginTop: 8, fontSize:'18px', fontWeight:'bold'}}>
+                            <div style={{backgroundColor:'#2B3143', color:'white', width:100, height: 34, display:'flex', justifyContent:'center', alignItems:'center'}}>
+                                分組
+                            </div>
+                          </div>
+                        }
+                        <div style={{ margin:'2px 10px 10px 10px' }}>
+                          <Droppable droppableId={columnId} key={columnId}>
+                            {(provided, snapshot) => {
+                              return (
+                                <div
+                                  {...provided.droppableProps}
+                                  ref={provided.innerRef}
+                                  style={{
+                                    background: snapshot.isDraggingOver
+                                      ? "rgba(246, 189, 88, 0.5)"
+                                      : "#5A81A8",
+                                    padding: 4,
+                                    width: 150,
+                                    minHeight: 440
+                                  }}
+                                >
+                                  {column.items.map((item, index) => {
+                                    return (
+                                      <Draggable
+                                        key={item.id}
+                                        draggableId={item.id}
+                                        index={index}
+                                      >
+                                        {(provided, snapshot) => {
+                                          return (
+                                            <div
+                                              ref={provided.innerRef}
+                                              {...provided.draggableProps}
+                                              {...provided.dragHandleProps}
+                                              style={{
+                                                userSelect: "none",
+                                                padding: 16,
+                                                margin: "0 0 8px 0",
+                                                minHeight: "30px",
+                                                minWidth: "50px",
+                                                backgroundColor: snapshot.isDragging
+                                                  ? "lightgray"
+                                                  : "#EEF1F4",
+                                                color: "black",
+                                                display:'flex',
+                                                justifyContent:'center',
+                                                alignItems:'center',
+                                                fontSize:'18px',
+                                                ...provided.draggableProps.style
+                                              }}
+                                            >
+                                              {item.label}
+                                            </div>
+                                          );
+                                        }}
+                                      </Draggable>
+                                    );
+                                  })}
+                                  {provided.placeholder}
+                                </div>
+                              );
+                            }}
+                          </Droppable>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </DragDropContext>
+                <Box style={{display:'flex', height:'40px', alignSelf:'end', justifySelf:'flex-end', right:'6vw', position:'absolute', backgroundColor:'#EEF1F4', zIndex:1200}}>
+                    <Button onClick={() => setShowGrouping(false)} variant="contained" color='secondary' style={{fontWeight:'bold'}}>取消</Button> 
+                    <Button onClick={onClickFinishGrouping} variant="contained" style={{fontWeight:'bold', marginLeft:'15px'}}>儲存分組</Button> 
+                </Box>
+              </div>
+            </div>
+          );
     }
 
     if(rows !== undefined){
@@ -667,12 +820,15 @@ export default function ListInGroup(appProps) {
                                 </div>
                             </DndContext>
                         </Box>
+                        {showGrouping ? <GroupingAction />:
                         <Grid container spacing={20} style={{padding:'0 20px'}}>
                             <Grid item xs={12} sx={{marginTop:'50px', display:'flex', justifyContent:'flex-end'}}>
                                 <Button onClick={() => setDisplayAddForm(false)} variant="contained" color='secondary' style={{fontWeight:'bold'}}>取消</Button> 
                                 <Button variant="contained" style={{fontWeight:'bold', marginLeft:'15px'}} onClick={finishAddForm}>完成</Button>
                             </Grid>
                         </Grid>
+                        }
+                        
                     </Paper>
                 </Box>
             )}
@@ -785,9 +941,9 @@ export default function ListInGroup(appProps) {
                     }}>完成</Button> 
                 </Box>
             </Modal>
+            <ResultModal />
         </Provider>
     );} else {
         return(<></>);
     }
 }
-
