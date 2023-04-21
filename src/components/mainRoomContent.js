@@ -70,8 +70,15 @@ export default function MainRoomContent(pageMainRoomProps) {
     const [chatOpen, setChatOpen] = useState(false);
     const [message, setMessage] = useState("");
     const [allMessages, setAllMessages] = useState([]);
-
+    const messagesEndRef = useRef(null);
     const {mutate} = useMutation(createRecord)
+
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({behavior: 'smooth'});
+    }
+    useEffect(() => {
+        scrollToBottom();
+    }, [allMessages])
 
     const addNewPeer = useCallback((newPeer, cb) => {
         const lookingFor = peers.find((peer) => peer.id === newPeer.iD);
@@ -471,7 +478,7 @@ export default function MainRoomContent(pageMainRoomProps) {
                     }
                 }}
             >
-                <DrawerHeader>
+                <DrawerHeader style={{height:'50px', position:'fixed', zIndex:1000, width:'100%', backgroundColor: "#5A81A8", borderRadius: '35px 0 0 0'}}>
                     <IconButton onClick={handleChatClose} color="secondary">
                         {theme.direction === "rtl" ? (
                         <ChevronLeft />
@@ -482,7 +489,7 @@ export default function MainRoomContent(pageMainRoomProps) {
                 </DrawerHeader>
                 <Divider />
                 <Box style={{display:'flex', flexDirection:'column', height:'100%'}}>
-                    <Box sx={{p:'0 10px'}} style={{display:'flex', flexDirection:'column'}}>
+                    <Box sx={{p:'30px 10px 0 10px'}} style={{display:'flex', flexDirection:'column', height:'86%', overflowY:'scroll'}}>
                     {allMessages.length !== 0 && allMessages?.map((message) => (
                     message.name === localStorage.getItem('userName') ?
                     <Box sx={{mt:'20px'}} style={{alignSelf:'end', display:'flex', flexDirection:'column'}}>
@@ -500,6 +507,7 @@ export default function MainRoomContent(pageMainRoomProps) {
                         </Box>
                     </Box> 
                     ))}
+                    <div ref={messagesEndRef} />
                     </Box>
                     <Box style={{position:'fixed', width:'290px', bottom:8, display:'flex', alignItems:'center', margin:'0 5px', justifyContent:'space-around'}}>
                         <TextField 
