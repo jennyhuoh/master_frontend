@@ -54,10 +54,24 @@ export default function DiscussGroupInfo(appProps) {
             localStorage.setItem('usersInGroup', JSON.stringify(groupInfo.member));
         }
     }, [groupInfo])
-    const onClickSaveInfo = () => {
-        const data = {
-            members: selectedMembers
+    const onClickSaveInfo = async () => {
+        let newMembersArr = await selectedMembers;
+        const owner = {
+            id: groupInfo.owner.id,
+            value: groupInfo.owner.userEmail,
+            label: groupInfo.owner.userName,
+            isOwner: true
         }
+        await Promise.all(selectedMembers.map((member, index) => {
+            newMembersArr[index].isOwner = false
+        }))
+        newMembersArr.push(owner);
+        // console.log('selected members', selectedMembers)
+        // console.log('groupInfo-owner', groupInfo.owner)
+        const data = {
+            members: newMembersArr
+        }
+        // console.log('new', newMembersArr)
         mutate({
             id: appProps.groupId,
             groupInfo: data
