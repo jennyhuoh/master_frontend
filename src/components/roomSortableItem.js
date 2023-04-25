@@ -1,8 +1,8 @@
 import { useSortable } from "@dnd-kit/sortable";
-import {CSS} from "@dnd-kit/utilities";
-import { Item } from "./item";
+import {CSS} from '@dnd-kit/utilities';
+import { RoomItem } from "./roomItem";
 
-export function SortableItem(props) {
+export function RoomSortableItem(props) {
     const {
         attributes,
         listeners,
@@ -18,7 +18,7 @@ export function SortableItem(props) {
         transition
     }
 
-    return (
-        <Item ref={setNodeRef} style={style} {...attributes} {...listeners} {...props} activeid={props.activeid.toString()} />
+    return(
+        <RoomItem ref={setNodeRef} style={style} {...attributes} {...listeners} {...props} activeid={props.activeid.toString()} />
     )
 }

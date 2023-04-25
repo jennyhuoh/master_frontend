@@ -1,11 +1,15 @@
-import { Box, Typography, IconButton, Toolbar, AppBar, Drawer, Divider, Stack, Card, CardContent, Checkbox } from "@mui/material";
+import { Box, Typography, IconButton, Toolbar, AppBar, Drawer, Divider, Stack } from "@mui/material";
 import { styled, useTheme } from "@mui/material/styles";
 import { Menu, ChevronLeft, ChevronRight } from "@mui/icons-material";
-import { useState, useEffect, useContext } from 'react';
-import { getGroupInfo, getAnActivity, editStage } from '../features/api';
+import { useState, useEffect } from 'react';
+import { getGroupInfo, getAnActivity, editStage, saveStagesSequence } from '../features/api';
 import { useQuery, useMutation } from 'react-query';
-import context,{ Provider } from '../context';
+import { Provider } from '../context';
 import MainRoomContent from "../components/mainRoomContent";
+import { DndContext, MeasuringStrategy, PointerSensor, closestCenter, useSensor, useSensors } from "@dnd-kit/core";
+import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import { RoomSortableItem } from "./roomSortableItem";
 
 const drawerWidth = 240;
 
@@ -54,27 +58,6 @@ const DrawerHeader = styled("div")(({ theme }) => ({
   justifyContent: "flex-end"
 }));
 
-const StageCard = (props) => {
-    const {editStageFunc} = useContext(context);
-    const onChangeCheckbox = (e) => {
-        editStageFunc(props.id, !props.stageChecked);
-    }
-
-    return(
-        <Card sx={{p:'6px', pb:0}}>
-            <CardContent xs={{paddingBottom:'0'}}>
-                <Typography style={{fontSize:'16px', fontWeight:'bold'}} component="div">
-                    {props.order}. {props.name}
-                </Typography>
-                <Box sx={{display:'flex', alignItems:'center', mt:1}}>
-                    <Checkbox color="success" checked={props.stageChecked} onChange={(e) => onChangeCheckbox(e)} />
-                    <Typography>階段開始</Typography>
-                </Box>
-            </CardContent>
-        </Card>
-    );
-}
-
 export default function RoomHeader(props) {
     const theme = useTheme();
     const [openDrawer, setOpenDrawer] = useState(false);
@@ -82,15 +65,19 @@ export default function RoomHeader(props) {
     const roomID = props.activityId;
     const [groupInfo, setGroupInfo] = useState(undefined);
     const [activityInfo, setActivityInfo] = useState(undefined);
-    const [stageInfo, setStageInfo] = useState(undefined);
+    const [stageInfo, setStageInfo] = useState([]);
     const [isOwner, setIsOwner] = useState(false);
     const [checkingStage, setCheckingStage] = useState(undefined);
+    const [activeId, setActiveId] = useState(null);
     const {data:groupData} = useQuery(['group', groupId], () =>
     getGroupInfo(groupId), {
         onSuccess: async() => {
             setGroupInfo(groupData)
         }
     })
+    useEffect(() => {
+        console.log('stageInfo', stageInfo)
+    }, [stageInfo])
     const {mutate} = useMutation(getAnActivity, {
         onSuccess: async(data) => {
             console.log('data', data)
@@ -103,6 +90,11 @@ export default function RoomHeader(props) {
             console.log('stageMutate data', data)
             setCheckingStage(data)
             mutate(roomID)
+        }
+    })
+    const {mutate: mutateSequence} = useMutation(saveStagesSequence, {
+        onSuccess: (data) => {
+            console.log('mutated sequence', data)
         }
     })
 
@@ -141,7 +133,42 @@ export default function RoomHeader(props) {
     const handleDrawerClose = () => {
         setOpenDrawer(false);
     };
-
+    function handleDragEnd(event) {
+        const {active, over} = event;
+        console.log('ACTIVE: ' + active.id);
+        console.log('OVER: ' + over.id);
+        if(active.id !== over.id) {
+            const activeIndex = stageInfo.findIndex(i => i.id === active.id);
+            const overIndex = stageInfo.findIndex(i => i.id === over.id);
+            const a = arrayMove(stageInfo, activeIndex, overIndex);
+            for(let i = 0; i < a.length; i++) {
+                a[i].stageOrder = i + 1
+            }
+            console.log('a', a);
+            setStageInfo(a);
+            // 在這裡打編輯順序api
+            mutateSequence(stageInfo)
+        }
+        setActiveId(null);
+    }
+    function handleDragStart(event) {
+        console.log('start drag');
+        const {active} = event;
+        console.log('ACTIVE: ' + active.id);
+        setActiveId(active.id);
+    }
+    const measuringConfig = {
+        droppable: {
+            strategy: MeasuringStrategy.Always,
+        }
+    }
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 8,
+            }
+        })
+    )
     return(
         <Provider value={contextValue}>
             <Box sx={{display:'flex'}}>
@@ -191,9 +218,25 @@ export default function RoomHeader(props) {
                         </IconButton>
                     </DrawerHeader>
                     <Divider />
-                    <Stack spacing={2} sx={{p:'10px', mt:'6px'}}>
-                    {stageInfo?.map((stage) => <StageCard key={stage.id} id={stage.id} name={stage.stageName} grouping={`${stage.grouping}`} order={stage.stageOrder} stageChecked={stage.stageChecked} />)}
-                    </Stack>
+                    <DndContext
+                        collisionDetection={closestCenter}
+                        onDragEnd={handleDragEnd}
+                        onDragStart={handleDragStart}
+                        measuring={measuringConfig}
+                        sensors={sensors}
+                        modifiers={[restrictToVerticalAxis]}
+                    >
+                        <Stack spacing={2} sx={{p:'10px', mt:'6px'}}>
+                            <SortableContext
+                                items={stageInfo}
+                                strategy={verticalListSortingStrategy}
+                            >
+    {/* <StageCard key={stage.id} id={stage.id} name={stage.stageName} grouping={`${stage.grouping}`} order={stage.stageOrder} stageChecked={stage.stageChecked} /> */}
+                            {stageInfo?.map((stage) => <RoomSortableItem key={stage.id} id={stage.id} name={stage.stageName} grouping={`${stage.grouping}`} order={stage.stageOrder} stagechecked={`${stage.stageChecked}`} activeid={(activeId == stage.id).toString()} />)}
+                            </SortableContext>
+                        </Stack>
+                    </DndContext>
+                    
                 </Drawer>
                 <Main open={openDrawer}>
                     <MainRoomContent groupId={props.groupId} activityId={props.activityId} />

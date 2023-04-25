@@ -1,11 +1,10 @@
 import { Box, Divider, Paper, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Button, Grid, TextField, Typography, Alert, Snackbar, Modal, Radio, IconButton } from "@mui/material";
 import React,{ useEffect, useState, useContext } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { v4 as uuid } from 'uuid';
+import { useNavigate } from "react-router-dom";
 import { Add, AddCircleOutline, AddCircle, RemoveCircle } from '@mui/icons-material';
 import { LocalizationProvider, DateTimePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { DndContext, closestCenter, DragOverlay, MeasuringStrategy, useDraggable, useSensors, useSensor, PointerSensor, closestCorners } from "@dnd-kit/core";
+import { DndContext, closestCenter, DragOverlay, MeasuringStrategy, useSensors, useSensor, PointerSensor } from "@dnd-kit/core";
 import { arrayMove, SortableContext, horizontalListSortingStrategy } from "@dnd-kit/sortable";
 import { SortableItem } from "./sortableItem";
 import { useMutation, useQuery } from 'react-query';
@@ -13,13 +12,10 @@ import { createStage, saveStagesSequence, createTeams, deleteStage, getTeams, cr
 import { Item } from './item';
 import context,{ Provider } from '../context';
 import { restrictToHorizontalAxis, restrictToWindowEdges } from "@dnd-kit/modifiers";
-import { GroupItem } from './groupSortableItem';
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import dayjs from 'dayjs';
-import Container from './container';
 
 const Rows = (props) => {
-    // const id = uuid();
     const [alertDeleteOpen, setAlertDeleteOpen] = useState(false);
     const { deleteActivityBtn } = useContext(context);
     let navigate = useNavigate();
@@ -104,7 +100,6 @@ const measuringConfig = {
 
 export default function ListInGroup(appProps) {
     const groupId = appProps.groupId;
-    // console.log(appProps.groupId)
     const [displayAddForm, setDisplayAddForm] = useState(false);
     const [startTime, setStartTime] = useState();
     const [activityName, setActivityName] = useState('');
@@ -113,13 +108,11 @@ export default function ListInGroup(appProps) {
     const [childActName, setChildActName] = useState('');
     const [radioValue, setRadioValue] = useState('all');
     const [alertContent, setAlertContent] = useState('請先填寫討論活動名稱以及開始時間');
-    // const [stages, setStages ] = useState([{id:1, stageName:"任務說明", order:1, grouping:false}, {id:2, stageName:"小組報告", order:2, grouping:false}]);    
     const [stages, setStages] = useState([])
     const [activeId, setActiveId] = useState(null);
     const [groupModalOpen, setGroupModalOpen] = useState(false);
     const [groupNum, setGroupNum] = useState(Math.floor(localStorage.getItem('usersNum')/3));
     const [groupItems, setGroupItems] = useState(JSON.parse(localStorage.getItem('usersInGroup')))
-    const [flag, setFlag] = useState(true);
     const [groupResultOpen, setGroupResultOpen] = useState(false);
     const [checkResult, setCheckResult] = useState(false);
     const [nowGroup, setNowGroup] = useState(null);
@@ -139,29 +132,7 @@ export default function ListInGroup(appProps) {
         setRows(data)
         console.log('data', data)
     }, [data])
-    // useEffect(() => {
-    //     setFlag(false)
-    //     setGroupItems({main: JSON.parse(localStorage.getItem('usersInGroup'))})
-    // }, [groupNum])
 
-    // useEffect(() => {
-    //     if(flag === false) {
-    //         for(let i = 1; i <= groupNum; i++) {
-    //             const a = 'container'+i;
-    //             groupItems[a] = []
-    //             setGroupItems({...groupItems})
-    //             setFlag(true)
-    //         } 
-    //     }
-    // }, [flag])
-
-    // useEffect(() => {
-    //     for(let i = 1; i <= groupNum; i++) {
-    //         const a = 'container'+i;
-    //         groupItems[a] = []
-    //         setGroupItems({...groupItems})
-    //     }
-    // }, [])
     useEffect(() => {
         let newArr = [];
         async function ParseNumIdToString(groupItem) {
@@ -181,9 +152,6 @@ export default function ListInGroup(appProps) {
                 distance: 8,
             }
         })
-    )
-    const sensorsChild = useSensors(
-        useSensor(PointerSensor)
     )
     const { mutate } = useMutation(createStage, {
         onSuccess: (data) => {
@@ -247,14 +215,7 @@ export default function ListInGroup(appProps) {
         if(activityName!=='') {
             setAddChildActOpen(true);
             setGroupNum(Math.floor(localStorage.getItem('usersNum')/3))
-            // for(let i = 1; i <= groupNum; i++) {
-            //     const a = 'container'+i;
-            //     groupItems[a] = []
-            //     setGroupItems({...groupItems})
-            //     setFlag(true)
-            // } 
-            console.log('num', groupNum);
-            // console.log('item', groupItems);
+            console.log('group num', groupNum);
         } else {
             setAlertContent('請先填寫討論活動名稱以及開始時間')
             setAlertName(true);
@@ -328,135 +289,6 @@ export default function ListInGroup(appProps) {
         setActiveId(active.id);
     }
 
-    function handleDragOver(event) {
-        console.log('start drag over')
-        const { active, over } = event;
-        const { id } = active;
-        const { id: overId } = over
-        console.log('active', id);
-        console.log('over', overId)
-        // Find the containers
-        var activeContainer;
-        var overContainer;
-        findContainer(id)
-        .then(async (data) => {
-            activeContainer = await data
-            await findContainer(overId)
-            .then(async (d) => {
-                overContainer = await d
-            })
-        })
-        .then(() => {
-            console.log('activeContainer', activeContainer)
-            console.log('overContainer', overContainer);
-            if(!activeContainer || !overContainer || activeContainer === overContainer) {
-                // console.log('i am here')
-                return;
-            }
-    
-            setGroupItems((prev) => {
-                const activeItems = prev[activeContainer];
-                const overItems = prev[overContainer];
-                
-                // Find the indexes of the items
-                const activeIndex = activeItems.findIndex(i => i.id === id);
-                const overIndex = overItems.findIndex(i => i.id === overId);
-                console.log('aIndex', activeIndex)
-                console.log('oIndex', overIndex)
-                let newIndex;
-                if(overId === Object.keys(prev).find((item) => item === overId)) {
-                    newIndex = overItems.length + 1;
-                } else {
-                    newIndex = overIndex >= 0 ? overIndex + 1 : overItems.length + 1;
-                }
-                
-                return {
-                    ...prev,
-                    [activeContainer]: [
-                        ...prev[activeContainer].filter((item) => item.id !== active.id)
-                    ],
-                    [overContainer]: [
-                        ...prev[overContainer].slice(0, newIndex),
-                        groupItems[activeContainer][activeIndex],
-                        ...prev[overContainer].slice(newIndex, prev[overContainer].length)
-                    ]
-                }
-            })
-        })
-       
-    }
-
-    async function findContainer(id) {
-        var result = 0;
-        if(typeof(id) !== 'number'){
-            return id
-        }
-        await Promise.all(Object.entries(groupItems).map(([key, value]) => {
-            console.log('value', value)
-            if(value.length !== 0) {
-                if(value?.find(e => e?.id === id)){
-                    console.log('here', key)
-                    result = key;
-                }
-            }
-        }))
-        return result;
-    }
-
-    function handleDragEndChild(event) {
-        console.log('start logging end')
-        console.log('groupItems', groupItems)
-        const {active, over} = event;
-        const {id} = active;
-        const {id:overId} = over;
-
-        var activeContainer;
-        var overContainer;
-        findContainer(id)
-        .then(async (data) => {
-            activeContainer = await data
-            await findContainer(overId)
-            .then(async (d) => {
-                overContainer = await d
-            })
-        })
-        .then(() => {
-            if(!activeContainer || !overContainer || activeContainer !== overContainer){
-                return;
-            }
-            const activeIndex = groupItems[activeContainer].findIndex(i => i.id === active.id);
-            const overIndex = groupItems[overContainer].findIndex(i => i.id === overId);
-
-            if(activeIndex !== overIndex){
-                setGroupItems((groupItems) => ({
-                    ...groupItems,
-                    [overContainer]: arrayMove(groupItems[overContainer], activeIndex, overIndex)
-                }))
-            }
-            setActiveId(null);
-        })
-    }
-
-    // const onClickSaveGroup = () => {
-    //     // console.log('save', groupItems)
-    //     if(columns['main'].length === 0) {
-    //         const stage = {
-    //             stageName: childActName,
-    //             grouping: true,
-    //             stageOrder: stages.length+1
-    //         }
-    //         // console.log('stage', stage);
-    //         mutate(stage);
-    //         // setAddChildActOpen(false);
-    //         setChildActName('');
-    //         setGroupResultOpen(true);
-    //         console.log('stages', stages)
-    //     } else {
-    //         setAlertContent('組員尚未分配完成')
-    //         setAlertName(true);
-    //     }
-    // }
-
     function ChildModal() {
         const onClickMinus = () => {
             if(groupNum >= 2){
@@ -509,6 +341,7 @@ export default function ListInGroup(appProps) {
         );
         
     }
+
     const onCloseResultModal = async () => {
         setShowGrouping(false)
         var teams = []
@@ -601,7 +434,6 @@ export default function ListInGroup(appProps) {
     }
 
     function GroupingAction() {
-        // const tasks = groupItems;
         useEffect(() => {
             console.log('container', container)
         }, [container])
@@ -811,7 +643,7 @@ export default function ListInGroup(appProps) {
                                         items={stages}
                                         strategy={horizontalListSortingStrategy}
                                     > 
-                                        {/* We need components that use the useSortable hook */}
+                                    {/* We need components that use the useSortable hook */}
                                     {stages.map(stage => <SortableItem key={stage.id} id={stage.id} name={stage.stageName} order={stage.order} grouping={stage.grouping.toString()} activeid={(activeId == stage.id).toString()}/>)}
                                     </SortableContext>
                                     <DragOverlay modifiers={[restrictToWindowEdges]}>

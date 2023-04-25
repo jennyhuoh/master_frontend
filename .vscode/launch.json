@@ -8,8 +8,8 @@
             "type": "chrome",
             "request": "launch",
             "name": "Launch Chrome against localhost",
-            // "url": "http://localhost:3000",
-            "url": "https://master-frontend-pi.vercel.app/",
+            "url": "http://localhost:3000",
+            // "url": "https://9653-111-248-17-45.ngrok-free.app",
             "webRoot": "${workspaceFolder}"
         }
     ]

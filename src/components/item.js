@@ -1,20 +1,15 @@
-import React, {forwardRef} from 'react';
+import React, {forwardRef, useState, useContext } from 'react';
 import { Box, Button, Modal, Typography } from '@mui/material';
 import { DragHandle, DeleteOutline } from "@mui/icons-material";
-import { useMutation } from "react-query";
-import { deleteStage } from "../features/api";
-import { useState, useContext, useEffect } from 'react';
 import context from '../context';
 
 export const Item = forwardRef(({id, listeners, attributes, style, ...props}, ref) => {
   const [alertModalOpen, setAlertModalOpen] = useState(false);
   const { deleteAStage, getTeamsBtn } = useContext(context);
-  const {mutate} = useMutation(deleteStage);
-// console.log('s', stages)
+
   const onClickDeleteStage = () => {
     console.log('here')
     setAlertModalOpen(true);
-    // mutate(props.id);
   }
 
   return (
