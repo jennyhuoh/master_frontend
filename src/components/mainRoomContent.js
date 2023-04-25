@@ -1,12 +1,13 @@
 import websocket, { Socket, connect } from 'socket.io-client';
 import { useRef, useEffect, useState, useCallback, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Box, Button, IconButton, Fab, Tooltip, Backdrop, CircularProgress, Typography, AppBar, Drawer, Divider, TextField } from '@mui/material';
-import { Mic, MicOff, ExitToApp, Groups2, CastForEducation, Textsms, ChevronLeft, ChevronRight, Send } from '@mui/icons-material';
+import { Box, Button, IconButton, Fab, Tooltip, Backdrop, CircularProgress, Typography, AppBar, Drawer, Divider, TextField, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
+import { Mic, MicOff, ExitToApp, Groups2, CastForEducation, Textsms, ChevronLeft, ChevronRight, Send, Campaign } from '@mui/icons-material';
 import { useStateWithCallback } from '../hooks/useStateWithCallback';
 import { createRecord } from '../features/api';
 import { useMutation } from 'react-query';
 import { styled, useTheme } from "@mui/material/styles";
+import { v4 as uuidv4 } from 'uuid'; 
 import freeice from 'freeice';
 import AvatarGroup from 'react-avatar-group';
 import randomColor from 'randomcolor';
@@ -69,6 +70,10 @@ export default function MainRoomContent(pageMainRoomProps) {
     const [chatOpen, setChatOpen] = useState(false);
     const [message, setMessage] = useState("");
     const [allMessages, setAllMessages] = useState([]);
+    const [openAnnouncement, setOpenAnnouncement] = useState(false);
+    const [announceContent, setAnnounceContent] = useState("");
+    const [stableAnnounceContent, setStableAnnounceContent] = useState([]);
+    const [releasedAnnounceContent, setReleasedAnnounceContent] = useState(null);
     const messagesEndRef = useRef(null);
     const {mutate} = useMutation(createRecord)
 
@@ -91,6 +96,7 @@ export default function MainRoomContent(pageMainRoomProps) {
     }
 
     useEffect(() => {
+        let announceInterval;
         const initChat = async () => {
             wsRef.current = websocket('http://localhost:3001') 
             await captureMedia();
@@ -129,7 +135,20 @@ export default function MainRoomContent(pageMainRoomProps) {
                     time: time
                 }])
             })
-
+            // Listen for announcements
+            if(stableAnnounceContent.length !== 0) {
+                announceInterval = setInterval(() => {
+                    wsRef.current.emit('sendAnnouncement', {
+                        content: stableAnnounceContent,
+                        rooms: JSON.parse(localStorage.getItem('announcement'))
+                    })
+                }, 10000)
+            }
+            wsRef.current.on('sendAnnouncement', ({content}) => {
+                console.log('getting announcement', content);
+                setReleasedAnnounceContent(content)
+            })
+            
         }
     
         async function captureMedia() {
@@ -225,6 +244,7 @@ export default function MainRoomContent(pageMainRoomProps) {
        
         initChat();
         return () => {
+            clearInterval(announceInterval);
             // Leaving the room
             localMediaStream.current.getTracks().forEach(track => track.stop())
             wsRef.current.emit('leave', {roomID})
@@ -325,9 +345,20 @@ export default function MainRoomContent(pageMainRoomProps) {
     }, [peers]);
 
     useEffect(() => {
+        let rooms = JSON.parse(localStorage.getItem('announcement'));
+        async function setAnnouncementRooms(teamDetail) {
+            await Promise.all(teamDetail.map(async (team) => {
+                rooms.push(team.id)
+            }))
+        }
         if(checkingStage !== undefined) {
             if(checkingStage.grouping === true && checkingStage.stageChecked === true) {
                 let teamDetail = stageInfo[checkingStage.stageOrder-1].teams
+                setAnnouncementRooms(teamDetail)
+                .then(() => {
+                    console.log('announcement rooms', rooms);
+                    localStorage.setItem('announcement', JSON.stringify(rooms));
+                })
                 wsRef.current.emit('openGroupDiscuss', {roomId: roomID, teamDetail})
                 // console.log('checkingStage', checkingStage);
                 // localStorage.setItem('stageId', checkingStage.id)
@@ -384,6 +415,19 @@ export default function MainRoomContent(pageMainRoomProps) {
             setMessage("");
         }
     }
+    const onClickSendAnnouncement = () => {
+        if(announceContent !== "") { 
+            let a = stableAnnounceContent;
+            a.push(announceContent)
+            setStableAnnounceContent(a)
+            wsRef.current.emit('sendAnnouncement', {
+                content: stableAnnounceContent,
+                rooms: JSON.parse(localStorage.getItem('announcement'))
+            })
+            setAnnounceContent("")
+            setOpenAnnouncement(false)
+        } else return
+    }
 
     if(true){
         return(
@@ -436,6 +480,13 @@ export default function MainRoomContent(pageMainRoomProps) {
                         <Textsms sx={{fontSize:30, color:'white'}} />
                     </Fab>
                 </Tooltip>
+                {localStorage.getItem('role') === 'teacher' ?
+                <Tooltip title="發公告">
+                    <Fab onClick={() => setOpenAnnouncement(true)} aria-label="leave" color="primary" style={{position:'fixed', right:200, bottom:40}}>
+                        <Campaign sx={{fontSize:34}} />
+                    </Fab>
+                </Tooltip> : "" 
+                }
                 {teamRoom ? 
                 <Tooltip title="前往分組討論">
                     <Fab onClick={onClickGroupDiscussion} aria-label="leave" sx={{color:'#EEF1F4'}} style={{position:'fixed', right:200, bottom:40}}>
@@ -477,7 +528,7 @@ export default function MainRoomContent(pageMainRoomProps) {
                     }
                 }}
             >
-                <DrawerHeader style={{height:'50px', position:'fixed', zIndex:1000, width:'100%', backgroundColor: "#5A81A8", borderRadius: '35px 0 0 0'}}>
+                <DrawerHeader style={{height:'40px', position:'fixed', zIndex:1000, width:'100%', backgroundColor: "#5A81A8", borderRadius: '35px 0 0 0'}}>
                     <IconButton onClick={handleChatClose} color="secondary">
                         {theme.direction === "rtl" ? (
                         <ChevronLeft />
@@ -487,18 +538,28 @@ export default function MainRoomContent(pageMainRoomProps) {
                     </IconButton>
                 </DrawerHeader>
                 <Divider />
-                <Box style={{display:'flex', flexDirection:'column', height:'100%'}}>
-                    <Box sx={{p:'30px 10px 0 10px'}} style={{display:'flex', flexDirection:'column', height:'86%', overflowY:'scroll'}}>
+                {releasedAnnounceContent && 
+                <Box style={{height:'auto', position:'fixed', zIndex:1000, width:'80%', backgroundColor: "#5A81A8", top:'55px'}}>
+                {releasedAnnounceContent?.map((content) => (
+                    <Box key={uuidv4()} style={{backgroundColor:'#EEF1F4', borderRadius:'6px', padding:'8px 15px', color:'black', width:'260px', marginLeft:'4px', display:'flex', alignItems:'center', fontSize:'14px', marginTop:'4px'}}>
+                        <Box>公告：{content}</Box>
+
+                    </Box>
+                ))}
+                </Box>
+                }
+                <Box style={{display:'flex', flexDirection:'column', height:'90%'}}>
+                    <Box sx={{p:'120px 10px 0 10px'}} style={{display:'flex', flexDirection:'column', height:'86%', overflowY:'scroll'}}>
                     {allMessages.length !== 0 && allMessages?.map((message) => (
                     message.name === localStorage.getItem('userName') ?
-                    <Box sx={{mt:'20px'}} style={{alignSelf:'end', display:'flex', flexDirection:'column'}}>
+                    <Box key={uuidv4()} sx={{mt:'20px'}} style={{alignSelf:'end', display:'flex', flexDirection:'column'}}>
                         <Typography style={{fontSize:'12px', alignSelf:'end', marginRight:'2px'}}>{message.name}</Typography>
                         <Box style={{display:'flex', alignItems:'baseline', marginTop:'2px'}}>
                             <Typography style={{marginRight:'8px', fontSize:'12px', alignSelf:'end'}}>{message.time}</Typography>
                             <Typography style={{backgroundColor:'#F6BD58', borderRadius:'6px', padding:'8px 15px', color:'black'}}>{message.message}</Typography>
                         </Box>
                     </Box> :
-                    <Box sx={{mt:'20px'}}>
+                    <Box key={uuidv4()} sx={{mt:'20px'}}>
                         <Typography style={{fontSize:'12px', marginLeft:'2px'}}>{message.name}</Typography>
                         <Box style={{display:'flex', alignItems:'baseline', marginTop:'2px'}}>
                             <Typography style={{backgroundColor:'#EEF1F4', borderRadius:'6px', padding:'8px 15px', color:'black'}}>{message.message}</Typography>
@@ -525,6 +586,26 @@ export default function MainRoomContent(pageMainRoomProps) {
                     </Box>
                 </Box>
             </Drawer>
+            <Dialog 
+                open={openAnnouncement} 
+                onClose={() => setOpenAnnouncement(false)} 
+                sx={{
+                    "& .MuiDialog-container": {
+                        "& .MuiPaper-root": {
+                            width: "100%",
+                            maxWidth: "500px"
+                        }
+                }}}
+            >
+                <DialogTitle style={{fontWeight:'bold'}}>請輸入公告內容 …</DialogTitle>
+                <DialogContent>
+                    <TextField margin='dense' id="announcementContent" fullWidth variant='standard' onChange={(e) => {setAnnounceContent(e.target.value)}} value={announceContent} />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setOpenAnnouncement(false)} variant="contained" color='secondary' style={{fontWeight:'bold'}}>取消</Button> 
+                    <Button variant="contained" style={{fontWeight:'bold', marginLeft:'15px'}} onClick={onClickSendAnnouncement}>發送</Button>
+                </DialogActions>
+            </Dialog>
         </>
         );
     } else{

@@ -231,7 +231,6 @@ export default function RoomHeader(props) {
                                 items={stageInfo}
                                 strategy={verticalListSortingStrategy}
                             >
-    {/* <StageCard key={stage.id} id={stage.id} name={stage.stageName} grouping={`${stage.grouping}`} order={stage.stageOrder} stageChecked={stage.stageChecked} /> */}
                             {stageInfo?.map((stage) => <RoomSortableItem key={stage.id} id={stage.id} id2={`${stage.id}`} name={stage.stageName} grouping={`${stage.grouping}`} order={stage.stageOrder} stagechecked={`${stage.stageChecked}`} activeid={(activeId == stage.id).toString()} />)}
                             </SortableContext>
                         </Stack>

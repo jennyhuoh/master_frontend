@@ -26,11 +26,13 @@ const Rows = (props) => {
     const openInNewTab = url => {
         window.open(url, '_blank', 'noopener,noreferrer');
     };
-    const onClickStartDiscuss = () => {
+    const onClickStartDiscuss = async () => {
+        let rooms = []
+        rooms[0] = await props.row.id
         localStorage.setItem('mainRoomId', props.row.id)
         openInNewTab(`http://localhost:3000/mainRoom/${props.groupId}/${props.row.id}`)
         localStorage.setItem('discussType', 'all');
-        localStorage.setItem('announcement', []);
+        localStorage.setItem('announcement', JSON.stringify(rooms));
     }
     return(
     <>
