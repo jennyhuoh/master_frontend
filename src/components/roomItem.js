@@ -5,10 +5,14 @@ import { Box, Typography, Card, CardContent, Checkbox } from "@mui/material";
 export const RoomItem = forwardRef(({id, listeners, attributes, styles, ...props}, ref) => {
     const {editStageFunc} = useContext(context);
     const onChangeCheckbox = (e) => {
+        console.log('props', props)
+        console.log('id', props.id)
+        console.log('id2', props.id2)
+        const id = parseInt(props.id2, 10);
         if(props.stagechecked === 'true') {
-            editStageFunc(props.id, false);
+            editStageFunc(id, false);
         } else {
-            editStageFunc(props.id, true); 
+            editStageFunc(id, true); 
         }
     }
 

@@ -30,6 +30,7 @@ const Rows = (props) => {
         localStorage.setItem('mainRoomId', props.row.id)
         openInNewTab(`http://localhost:3000/mainRoom/${props.groupId}/${props.row.id}`)
         localStorage.setItem('discussType', 'all');
+        localStorage.setItem('announcement', []);
     }
     return(
     <>

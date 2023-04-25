@@ -59,7 +59,6 @@ export default function MainRoomContent(pageMainRoomProps) {
     const [isMute, setMute] = useState(true);
     const [backDropOpen, setBackDropOpen] = useState(false);
     const [whoIsTalking, setWhoIsTalking] = useState(null);
-
     const mediaRecorder = useRef(null);
     const [recordingStatus, setRecordingStatus] = useState("inactive");
     const [audioChunks, setAudioChunks] = useState(null);
