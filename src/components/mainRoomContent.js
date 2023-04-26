@@ -2,7 +2,7 @@ import websocket, { Socket, connect } from 'socket.io-client';
 import { useRef, useEffect, useState, useCallback, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Box, Button, IconButton, Fab, Tooltip, Backdrop, CircularProgress, Typography, AppBar, Drawer, Divider, TextField, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
-import { Mic, MicOff, ExitToApp, Groups2, CastForEducation, Textsms, ChevronLeft, ChevronRight, Send, Campaign } from '@mui/icons-material';
+import { Mic, MicOff, ExitToApp, Groups2, CastForEducation, Textsms, ChevronLeft, ChevronRight, Send, Campaign, CloseRounded } from '@mui/icons-material';
 import { useStateWithCallback } from '../hooks/useStateWithCallback';
 import { createRecord } from '../features/api';
 import { useMutation } from 'react-query';
@@ -367,6 +367,15 @@ export default function MainRoomContent(pageMainRoomProps) {
         }
     }, [checkingStage])
 
+    useEffect(() => {
+        if(stableAnnounceContent !== []) {
+            wsRef.current.emit('sendAnnouncement', {
+                content: stableAnnounceContent,
+                rooms: JSON.parse(localStorage.getItem('announcement'))
+            })
+        }
+    }, [stableAnnounceContent])
+
     const onClickGroupDiscussion = () => {
         let room = roomID;
         setBackDropOpen(true);
@@ -416,17 +425,17 @@ export default function MainRoomContent(pageMainRoomProps) {
         }
     }
     const onClickSendAnnouncement = () => {
-        if(announceContent !== "") { 
-            let a = stableAnnounceContent;
-            a.push(announceContent)
-            setStableAnnounceContent(a)
-            wsRef.current.emit('sendAnnouncement', {
-                content: stableAnnounceContent,
-                rooms: JSON.parse(localStorage.getItem('announcement'))
-            })
+        if(announceContent !== "") {
+            setStableAnnounceContent([...stableAnnounceContent, announceContent])
             setAnnounceContent("")
             setOpenAnnouncement(false)
         } else return
+    }
+
+    const onClickCloseAnnounce = (content) => {
+        let newArr = stableAnnounceContent.filter((a) => a !== content)
+        console.log('newArr', newArr)
+        setStableAnnounceContent(newArr)
     }
 
     if(true){
@@ -541,9 +550,9 @@ export default function MainRoomContent(pageMainRoomProps) {
                 {releasedAnnounceContent && 
                 <Box style={{height:'auto', position:'fixed', zIndex:1000, width:'80%', backgroundColor: "#5A81A8", top:'55px'}}>
                 {releasedAnnounceContent?.map((content) => (
-                    <Box key={uuidv4()} style={{backgroundColor:'#EEF1F4', borderRadius:'6px', padding:'8px 15px', color:'black', width:'260px', marginLeft:'4px', display:'flex', alignItems:'center', fontSize:'14px', marginTop:'4px'}}>
+                    <Box key={uuidv4()} style={{backgroundColor:'#EEF1F4', borderRadius:'6px', padding:'8px 15px', color:'black', width:'260px', marginLeft:'4px', display:'flex', alignItems:'center', fontSize:'14px', marginTop:'4px', justifyContent:'space-between'}}>
                         <Box>公告：{content}</Box>
-
+                        <IconButton onClick={() => onClickCloseAnnounce(content)}><CloseRounded fontSize='small' color="action" /></IconButton>
                     </Box>
                 ))}
                 </Box>
