@@ -1,8 +1,8 @@
 import websocket, { Socket, connect } from 'socket.io-client';
-import { useRef, useEffect, useState, useCallback, useContext } from 'react';
+import React, { useRef, useEffect, useState, useCallback, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Box, Button, IconButton, Fab, Tooltip, Backdrop, CircularProgress, Typography, AppBar, Drawer, Divider, TextField, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
-import { Mic, MicOff, ExitToApp, Groups2, CastForEducation, Textsms, ChevronLeft, ChevronRight, Send, Campaign, CloseRounded } from '@mui/icons-material';
+import { Box, Button, IconButton, Fab, Tooltip, Backdrop, CircularProgress, Typography, AppBar, Drawer, Divider, TextField, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { Mic, MicOff, ExitToApp, Groups2, CastForEducation, Textsms, ChevronLeft, ChevronRight, Send, Campaign, CloseRounded, BackHand } from '@mui/icons-material';
 import { useStateWithCallback } from '../hooks/useStateWithCallback';
 import { createRecord } from '../features/api';
 import { useMutation } from 'react-query';
@@ -12,6 +12,7 @@ import freeice from 'freeice';
 import AvatarGroup from 'react-avatar-group';
 import randomColor from 'randomcolor';
 import context from '../context';
+import raiseHandIcon from '../features/images/btn-raiseHand.png';
 
 const drawerWidth = 300;
 const AppBars = styled(AppBar, {
@@ -65,7 +66,7 @@ export default function MainRoomContent(pageMainRoomProps) {
     const [audioChunks, setAudioChunks] = useState(null);
     const [audio, setAudio] = useState(null);
     const mimeType = "audio/wav";
-    const {stageInfo, checkingStage} = useContext(context);
+    const {stageInfo, checkingStage, openDrawer} = useContext(context);
     const [teamRoom, setTeamRoom] = useState(null);
     const [chatOpen, setChatOpen] = useState(false);
     const [message, setMessage] = useState("");
@@ -74,6 +75,7 @@ export default function MainRoomContent(pageMainRoomProps) {
     const [announceContent, setAnnounceContent] = useState("");
     const [stableAnnounceContent, setStableAnnounceContent] = useState([]);
     const [releasedAnnounceContent, setReleasedAnnounceContent] = useState(null);
+    const [raiseHandArr, setRaiseHandArr] = useState([])
     const messagesEndRef = useRef(null);
     const {mutate} = useMutation(createRecord)
 
@@ -96,7 +98,7 @@ export default function MainRoomContent(pageMainRoomProps) {
     }
 
     useEffect(() => {
-        let announceInterval;
+      
         const initChat = async () => {
             wsRef.current = websocket('http://localhost:3001') 
             await captureMedia();
@@ -136,19 +138,24 @@ export default function MainRoomContent(pageMainRoomProps) {
                 }])
             })
             // Listen for announcements
-            if(stableAnnounceContent.length !== 0) {
-                announceInterval = setInterval(() => {
-                    wsRef.current.emit('sendAnnouncement', {
-                        content: stableAnnounceContent,
-                        rooms: JSON.parse(localStorage.getItem('announcement'))
-                    })
-                }, 10000)
-            }
             wsRef.current.on('sendAnnouncement', ({content}) => {
                 console.log('getting announcement', content);
                 setReleasedAnnounceContent(content)
             })
-            
+            // Listen for who raises hand
+            wsRef.current.on('raiseHand', ({name}) => {
+                console.log('someone raised hand', name)
+                if(localStorage.getItem('role') === 'teacher') {
+                    if(raiseHandArr !== []) {
+                        let index = raiseHandArr.findIndex((user) => user === name)
+                        if(index === -1) {
+                            setRaiseHandArr([...raiseHandArr, name])
+                        }
+                    } else {
+                        setRaiseHandArr([...raiseHandArr, name])
+                    }
+                }
+            })
         }
     
         async function captureMedia() {
@@ -244,7 +251,7 @@ export default function MainRoomContent(pageMainRoomProps) {
        
         initChat();
         return () => {
-            clearInterval(announceInterval);
+            
             // Leaving the room
             localMediaStream.current.getTracks().forEach(track => track.stop())
             wsRef.current.emit('leave', {roomID})
@@ -345,6 +352,7 @@ export default function MainRoomContent(pageMainRoomProps) {
     }, [peers]);
 
     useEffect(() => {
+       
         let rooms = JSON.parse(localStorage.getItem('announcement'));
         async function setAnnouncementRooms(teamDetail) {
             await Promise.all(teamDetail.map(async (team) => {
@@ -368,11 +376,29 @@ export default function MainRoomContent(pageMainRoomProps) {
     }, [checkingStage])
 
     useEffect(() => {
-        if(stableAnnounceContent !== []) {
+        let announceInterval;
+        console.log('stableAnnounceContent change')
+        // if(stableAnnounceContent !== []) {
+        //     wsRef.current.emit('sendAnnouncement', {
+        //         content: stableAnnounceContent,
+        //         rooms: JSON.parse(localStorage.getItem('announcement'))
+        //     })
+        // }
+        if(stableAnnounceContent.length !== 0 && returnUserIndex() === -1) {
             wsRef.current.emit('sendAnnouncement', {
                 content: stableAnnounceContent,
                 rooms: JSON.parse(localStorage.getItem('announcement'))
             })
+            console.log('stableAnnounceContent change & in the if')
+            announceInterval = setInterval(() => {
+                wsRef.current.emit('sendAnnouncement', {
+                    content: stableAnnounceContent,
+                    rooms: JSON.parse(localStorage.getItem('announcement'))
+                })
+            }, 10000)
+        }
+        return () => {
+            clearInterval(announceInterval);
         }
     }, [stableAnnounceContent])
 
@@ -437,6 +463,23 @@ export default function MainRoomContent(pageMainRoomProps) {
         console.log('newArr', newArr)
         setStableAnnounceContent(newArr)
     }
+    function returnUserIndex() {
+        let index = JSON.parse(localStorage.getItem('usersInGroup'))?.findIndex((user) => user.label === localStorage.getItem('userName'))
+        return index;
+    }
+    const onClickRaiseHand = () => {
+        wsRef.current.emit('raiseHand', {
+            name: localStorage.getItem('userName'),
+            room: roomID
+        })
+    }
+    const onClickCloseUserRaise = (name) => {
+        let newArr = raiseHandArr.filter((user) => user !== name)
+        setRaiseHandArr(newArr)
+    }
+    useEffect(() => {
+        console.log('openDrawer change', openDrawer)
+    }, [openDrawer])
 
     if(true){
         return(
@@ -489,13 +532,21 @@ export default function MainRoomContent(pageMainRoomProps) {
                         <Textsms sx={{fontSize:30, color:'white'}} />
                     </Fab>
                 </Tooltip>
-                {localStorage.getItem('role') === 'teacher' ?
+                {localStorage.getItem('role') === 'teacher' && localStorage.getItem('discussType') === 'all' ?
                 <Tooltip title="發公告">
                     <Fab onClick={() => setOpenAnnouncement(true)} aria-label="leave" color="primary" style={{position:'fixed', right:200, bottom:40}}>
                         <Campaign sx={{fontSize:34}} />
                     </Fab>
                 </Tooltip> : "" 
                 }
+                {returnUserIndex() !== -1 && localStorage.getItem('discussType') === 'all' ?
+                <Tooltip title="舉手">
+                    <Fab onClick={onClickRaiseHand} aria-label="leave" color="info" style={{position:'fixed', right:200, bottom:40}}>
+                        {/* <BackHand sx={{fontSize:30, color:'white'}} /> */}
+                        <img style={{height:'34px'}} src={raiseHandIcon} alt="" />
+                    </Fab>
+                </Tooltip> : "" 
+                } 
                 {teamRoom ? 
                 <Tooltip title="前往分組討論">
                     <Fab onClick={onClickGroupDiscussion} aria-label="leave" sx={{color:'#EEF1F4'}} style={{position:'fixed', right:200, bottom:40}}>
@@ -552,7 +603,7 @@ export default function MainRoomContent(pageMainRoomProps) {
                 {releasedAnnounceContent?.map((content) => (
                     <Box key={uuidv4()} style={{backgroundColor:'#EEF1F4', borderRadius:'6px', padding:'8px 15px', color:'black', width:'260px', marginLeft:'4px', display:'flex', alignItems:'center', fontSize:'14px', marginTop:'4px', justifyContent:'space-between'}}>
                         <Box>公告：{content}</Box>
-                        <IconButton onClick={() => onClickCloseAnnounce(content)}><CloseRounded fontSize='small' color="action" /></IconButton>
+                        {localStorage.getItem('role') === 'teacher' && <IconButton onClick={() => onClickCloseAnnounce(content)}><CloseRounded fontSize='small' color="action" /></IconButton>}
                     </Box>
                 ))}
                 </Box>
@@ -615,6 +666,16 @@ export default function MainRoomContent(pageMainRoomProps) {
                     <Button variant="contained" style={{fontWeight:'bold', marginLeft:'15px'}} onClick={onClickSendAnnouncement}>發送</Button>
                 </DialogActions>
             </Dialog>
+            {raiseHandArr !== [] &&
+            <Box style={{position:'fixed', zIndex:1000, top:'70px', ...((openDrawer === true) ? {left:'260px'} : {left:'20px'})}}>
+            {raiseHandArr?.map((user) => (
+                <Box key={uuidv4()} style={{backgroundColor:'#EEF1F4', borderRadius:'4px', padding:'6px 5px 6px 15px', color:'black', width:'180px', marginLeft:'4px', display:'flex', alignItems:'center', fontSize:'14px', marginTop:'4px', justifyContent:'space-between'}}>
+                <Box style={{fontWeight:'bold'}}>{user} 舉手了!</Box>
+                <IconButton onClick={() => onClickCloseUserRaise(user)}><CloseRounded fontSize='small' color="action" /></IconButton>
+            </Box>
+            ))}
+            </Box>
+            }
         </>
         );
     } else{

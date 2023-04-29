@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const instance = axios.create({
     baseURL:'http://localhost:3001/',
-    // baseURL: 'https://788c-111-248-1-50.ngrok-free.app',
+    // baseURL: 'http://1c97-36-228-35-161.ngrok-free.app ',
     headers: {
         'X-Powered-By':'Express',
         'Content-Type':'application/json',
@@ -13,7 +13,7 @@ const instance = axios.create({
 })
 const recordInstance = axios.create({
     baseURL: 'http://localhost:3001/',
-    // baseURL: 'https://788c-111-248-1-50.ngrok-free.app',
+    // baseURL: 'http://1c97-36-228-35-161.ngrok-free.app ',
     headers: {
         'X-Powered-By': 'Express',
         'Content-Type': 'multipart/form-data',

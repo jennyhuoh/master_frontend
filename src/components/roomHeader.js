@@ -106,7 +106,7 @@ export default function RoomHeader(props) {
             }
         })
     }
-    const contextValue = {editStageFunc, stageInfo, checkingStage};
+    const contextValue = {editStageFunc, stageInfo, checkingStage, openDrawer};
 
     useEffect(() => {
         if(groupInfo !== undefined) {
@@ -143,6 +143,7 @@ export default function RoomHeader(props) {
             const a = arrayMove(stageInfo, activeIndex, overIndex);
             for(let i = 0; i < a.length; i++) {
                 a[i].stageOrder = i + 1
+                a[i].order = i + 1
             }
             console.log('a', a);
             setStageInfo(a);

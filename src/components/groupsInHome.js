@@ -50,10 +50,13 @@ const RecentCard = (props) => {
     const openInNewTab = url => {
         window.open(url, '_blank', 'noopener,noreferrer');
     };
-    const onClickStartDiscuss = () => {
+    const onClickStartDiscuss = async () => {
+        let rooms = []
+        rooms[0] = await props.id
         localStorage.setItem('mainRoomId', props.id)
         openInNewTab(`http://localhost:3000/mainRoom/${props.meetingId}/${props.id}`)
         localStorage.setItem('discussType', 'all');
+        localStorage.setItem('announcement', JSON.stringify(rooms));
     }
     return(
         <Card sx={{ width: 240, height: 150, borderRadius:'5px',padding:'4px', border:'2px solid #F6BD58'}}>
@@ -132,14 +135,17 @@ export default function GroupsInHome() {
                     <Typography style={{fontSize:'20px', fontWeight:'bold', marginBottom:'16px'}}>近期討論活動</Typography>
                     <Stack
                         direction='row'
-                        spacing={3}
                         sx={{
+                        display: 'grid',
+                        columnGap: 11.5,
+                        gridTemplateColumns: `repeat(${recent?.length}, 180px)`,
                         gridAutoFlow: 'column',
-                        overflowX:'scroll'
-                    }}
+                        overflowX:'scroll',
+                        padding:'5px 0'
+                        }}
                     > 
                     {recent ? 
-                    recent.map((activity) => <RecentCard meetingId={activity.groupMeetingId} id={activity.id} key={activity.groupMeetingId} name={activity.activityName} startTime={activity.activityStartDate} groupName={activity.groupName} />)
+                    recent.map((activity) => <RecentCard meetingId={activity.groupMeetingId} id={activity.id} key={activity.id} name={activity.activityName} startTime={activity.activityStartDate} groupName={activity.groupName} />)
                     : <CircularProgress color="inherit" /> }
                     </Stack>
                 </Box> 
