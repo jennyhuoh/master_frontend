@@ -1,8 +1,8 @@
-import { Box, Typography, IconButton, Toolbar, AppBar, Drawer, Divider, Stack } from "@mui/material";
+import { Box, Typography, IconButton, Toolbar, AppBar, Drawer, Divider, Stack, Alert, Button, Modal, TextField, Radio, Snackbar } from "@mui/material";
 import { styled, useTheme } from "@mui/material/styles";
 import { Menu, ChevronLeft, ChevronRight } from "@mui/icons-material";
-import { useState, useEffect } from 'react';
-import { getGroupInfo, getAnActivity, editStage, saveStagesSequence } from '../features/api';
+import React, { useState, useEffect } from 'react';
+import { getGroupInfo, getAnActivity, editStage, saveStagesSequence, createStage, createTeams, updateActivity } from '../features/api';
 import { useQuery, useMutation } from 'react-query';
 import { Provider } from '../context';
 import MainRoomContent from "../components/mainRoomContent";
@@ -57,7 +57,9 @@ const DrawerHeader = styled("div")(({ theme }) => ({
   ...theme.mixins.toolbar,
   justifyContent: "flex-end"
 }));
-
+const Alerts = React.forwardRef((props, ref) => {
+    return <Alert elevation={6} ref={ref} {...props} />
+})
 export default function RoomHeader(props) {
     const theme = useTheme();
     const [openDrawer, setOpenDrawer] = useState(false);
@@ -69,6 +71,12 @@ export default function RoomHeader(props) {
     const [isOwner, setIsOwner] = useState(false);
     const [checkingStage, setCheckingStage] = useState(undefined);
     const [activeId, setActiveId] = useState(null);
+    const [addStageOpen, setAddStageOpen] = useState(false);
+    const [newStageName, setNewStageName] = useState('');
+    const [radioValue, setRadioValue] = useState('all');
+    const [alertOpen, setAlertOpen] = useState(false);
+    const [mutateTeamsDetail, setMutateTeamsDetail] = useState(null);
+    let ref = React.createRef();
     const {data:groupData} = useQuery(['group', groupId], () =>
     getGroupInfo(groupId), {
         onSuccess: async() => {
@@ -95,6 +103,35 @@ export default function RoomHeader(props) {
     const {mutate: mutateSequence} = useMutation(saveStagesSequence, {
         onSuccess: (data) => {
             console.log('mutated sequence', data)
+        }
+    })
+    const {mutate: mutateCreateStage} = useMutation(createStage, {
+        onSuccess: (data) => {
+            console.log('successfully created a stage data:', data);
+            mutateUpdateActivity({
+                id: roomID,
+                info: {
+                    stageId: [data.id]
+                }
+            })
+            if(mutateTeamsDetail !== null) {
+                mutateTeams({
+                    teams: mutateTeamsDetail,
+                    id: data.id
+                })
+            }
+        }
+    })
+    const {mutate: mutateTeams} = useMutation(createTeams, {
+        onSuccess: () => {
+            mutate(roomID) 
+            setRadioValue('all')
+        }
+    })
+    const {mutate: mutateUpdateActivity} = useMutation(updateActivity, {
+        onSuccess: (data) => {
+            console.log('make association between acitvity and stage:', data)
+            mutate(roomID)
         }
     })
 
@@ -170,6 +207,40 @@ export default function RoomHeader(props) {
             }
         })
     )
+    const onClickFinishStage = async () => {
+        if(newStageName === ''){
+            setAlertOpen(true)
+        } else {
+            const stage = {
+                stageName: newStageName,
+                grouping: (radioValue === 'all') ? false : true,
+                stageOrder: stageInfo.length+1
+            }
+            if(radioValue !== 'all') {
+                let teams = [];
+                const groupStages = stageInfo.filter((stage) => stage.grouping.toString() === 'true')
+                await Promise.all(groupStages[groupStages.length-1].teams.map((team, index) => {
+                    const teamInfo = {
+                        teamName: team.teamName,
+                        teamOrder: index+1,
+                        teamMembers: team.teamMembers
+                    }
+                    teams.push(teamInfo)
+                }))
+                setMutateTeamsDetail(teams)
+            }
+            mutateCreateStage(stage)
+            setAddStageOpen(false);
+            setNewStageName('');
+        }
+    }
+    const onCloseAlert = (event, reason) => {
+        if(reason === 'clickaway') {
+            return;
+        }
+        setAlertOpen(false);
+    }
+
     return(
         <Provider value={contextValue}>
             <Box sx={{display:'flex'}}>
@@ -209,7 +280,7 @@ export default function RoomHeader(props) {
                         }
                     }}
                 >
-                    <DrawerHeader>
+                    <DrawerHeader style={{position:'fixed', zIndex:1000, left:'180px'}}>
                         <IconButton onClick={handleDrawerClose} color="secondary">
                             {theme.direction === "ltr" ? (
                             <ChevronLeft />
@@ -219,29 +290,76 @@ export default function RoomHeader(props) {
                         </IconButton>
                     </DrawerHeader>
                     <Divider />
-                    <DndContext
-                        collisionDetection={closestCenter}
-                        onDragEnd={handleDragEnd}
-                        onDragStart={handleDragStart}
-                        measuring={measuringConfig}
-                        sensors={sensors}
-                        modifiers={[restrictToVerticalAxis]}
-                    >
-                        <Stack spacing={2} sx={{p:'10px', mt:'6px'}}>
-                            <SortableContext
-                                items={stageInfo}
-                                strategy={verticalListSortingStrategy}
-                            >
-                            {stageInfo?.map((stage) => <RoomSortableItem key={stage.id} id={stage.id} id2={`${stage.id}`} name={stage.stageName} grouping={`${stage.grouping}`} order={stage.stageOrder} stagechecked={`${stage.stageChecked}`} activeid={(activeId == stage.id).toString()} />)}
-                            </SortableContext>
-                        </Stack>
-                    </DndContext>
+                    <Box style={{overflowY:'scroll', marginTop:'55px', paddingBottom:'10px'}}>
+                        <DndContext
+                            collisionDetection={closestCenter}
+                            onDragEnd={handleDragEnd}
+                            onDragStart={handleDragStart}
+                            measuring={measuringConfig}
+                            sensors={sensors}
+                            modifiers={[restrictToVerticalAxis]}
+                        >
+                            <Stack spacing={2} sx={{p:'10px', mt:'6px'}}>
+                                <SortableContext
+                                    items={stageInfo}
+                                    strategy={verticalListSortingStrategy}
+                                >
+                                {stageInfo?.map((stage) => <RoomSortableItem key={stage.id} id={stage.id} id2={`${stage.id}`} name={stage.stageName} grouping={`${stage.grouping}`} order={stage.stageOrder} stagechecked={`${stage.stageChecked}`} activeid={(activeId == stage.id).toString()} />)}
+                                </SortableContext>
+                            </Stack>
+                        </DndContext>
+                        <Button onClick={() => setAddStageOpen(true)} variant="contained" color="secondary" style={{width: 220, height: 50, borderRadius:'5px', display:'flex', justifyContent:'center', alignItems:'center', border:'1.5px #BEBEBE dashed', backgroundColor:'rgba(255, 255, 255, 0.8)', margin:'6px 9px'}}>
+                            <Typography color="gray">新增活動</Typography>
+                        </Button>
+                    </Box>
                     
                 </Drawer>
                 <Main open={openDrawer}>
                     <MainRoomContent groupId={props.groupId} activityId={props.activityId} />
                 </Main>
             </Box>
+            <Modal
+                open={addStageOpen}
+                onClose={() => setAddStageOpen(false)}
+            >
+                <Box style={{position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 260, backgroundColor: 'white', boxShadow: 24, padding:'20px 25px', borderRadius:'5px', display:'flex', flexDirection:'column', alignItems:'center'}}>
+                    <TextField style={{marginTop:'10px', width:'100%'}} InputLabelProps={{shrink:true,}} variant="standard" label="1. 活動名稱" color="warning" required value={newStageName} onChange={(e) => setNewStageName(e.target.value)} />
+                    <Box sx={{mt:'30px', width:'100%'}}>
+                        <p style={{color:'grey', fontSize:'4px', marginBottom:'10px'}}>2. 討論類型</p>
+                        <Box style={{display:'flex', justifyContent:'space-around'}}>
+                            <Box style={{fontSize:'4px', fontWeight:'bold'}}>
+                                <Radio
+                                    checked={radioValue === 'all'}
+                                    onChange={(e) => setRadioValue(e.target.value)}
+                                    value="all"
+                                    name="child-types"
+                                    sx={{ml:'-25px'}}
+                                    color="default"
+                                />
+                                全體討論
+                            </Box>
+                            <Box style={{fontSize:'4px', fontWeight:'bold'}}>
+                                <Radio
+                                    checked={radioValue === 'group'}
+                                    onChange={(e) => setRadioValue(e.target.value)}
+                                    value="group"
+                                    name="child-types"
+                                    color="default"
+                                /> 
+                                分組討論
+                            </Box>
+                        </Box>
+                        <Box style={{display:'flex', justifyContent:'flex-end', marginTop:'30px'}}>
+                            <Button variant="contained" style={{fontWeight:'bold', marginLeft:'15px'}} onClick={onClickFinishStage}>完成</Button> 
+                        </Box>
+                    </Box>
+                </Box>
+            </Modal>
+            <Snackbar open={alertOpen} autoHideDuration={6000} onClose={onCloseAlert}>
+                <Alerts ref={ref} onClose={onCloseAlert} severity="error"sx={{width:'28vw'}}>
+                    請先填寫活動名稱
+                </Alerts>
+            </Snackbar>
         </Provider>
     );
 }

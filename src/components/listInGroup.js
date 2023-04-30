@@ -157,18 +157,18 @@ export default function ListInGroup(appProps) {
         })
     )
     const { mutate } = useMutation(createStage, {
-        onSuccess: (data) => {
-            console.log('dd', data)
-            const stage = {
-                id: data.id,
-                stageName: data.stageName,
-                order: data.stageOrder,
-                grouping: data.grouping
-            }
-            const d = stages.push(stage);
-            console.log('d', d);
-            console.log(stages)
-        }
+        // onSuccess: (data) => {
+            // console.log('dd', data)
+            // const stage = {
+            //     id: data.id,
+            //     stageName: data.stageName,
+            //     order: data.stageOrder,
+            //     grouping: data.grouping
+            // }
+            // const d = stages.push(stage);
+            // console.log('d', d);
+            // console.log(stages)
+        // }
     })
     const { mutate: mutateSequence } = useMutation(saveStagesSequence, {
         onSuccess: (data) => {

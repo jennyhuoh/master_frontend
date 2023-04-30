@@ -165,6 +165,12 @@ export const editStage = async ({id, stage}) => {
     const data = await response.data;
     return data
 };
+// Update an activity
+export const updateActivity = async ({id, info}) => {
+    const response = await instance.post(`/activity/${id}`, info);
+    const data = await response.data;
+    return data
+}
 
 
 
