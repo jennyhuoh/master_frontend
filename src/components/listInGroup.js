@@ -157,18 +157,18 @@ export default function ListInGroup(appProps) {
         })
     )
     const { mutate } = useMutation(createStage, {
-        // onSuccess: (data) => {
-            // console.log('dd', data)
-            // const stage = {
-            //     id: data.id,
-            //     stageName: data.stageName,
-            //     order: data.stageOrder,
-            //     grouping: data.grouping
-            // }
-            // const d = stages.push(stage);
-            // console.log('d', d);
-            // console.log(stages)
-        // }
+        onSuccess: (data) => {
+            console.log('dd', data)
+            const stage = {
+                id: data.id,
+                stageName: data.stageName,
+                order: data.stageOrder,
+                grouping: data.grouping
+            }
+            const d = stages.push(stage);
+            console.log('d', d);
+            console.log(stages)
+        }
     })
     const { mutate: mutateSequence } = useMutation(saveStagesSequence, {
         onSuccess: (data) => {
@@ -180,7 +180,17 @@ export default function ListInGroup(appProps) {
             setGroupModalOpen(false)
             setGroupResultOpen(false)
             setAddChildActOpen(false)
-            setGroupItems({main: JSON.parse(localStorage.getItem('usersInGroup'))})
+            let newArr = [];
+            async function ParseNumIdToString(groupItem) {
+                await Promise.all(groupItem.map(async (item) => {
+                    const data = await item
+                    data.id = await data.id.toString()
+                    newArr.push(data);
+                }))
+            }
+            ParseNumIdToString(JSON.parse(localStorage.getItem('usersInGroup')));
+            setGroupItems(newArr)
+            // setGroupItems({main: JSON.parse(localStorage.getItem('usersInGroup'))})
         }
     })
     const {mutate: mutateDelete} = useMutation(deleteStage)
@@ -302,13 +312,14 @@ export default function ListInGroup(appProps) {
             if(groupNum < Math.floor(localStorage.getItem('usersNum')/2) && groupNum < 8) {
                 setGroupNum(groupNum+1)
             }
-            console.log(groupItems)
+            
         }
         const onClickGroupNum = () => {
             let obj = {};
+            console.log('groupItems', groupItems)
             obj.main = {
                 name: "main",
-                items: groupItems
+                items: groupItems.main ? groupItems.main : groupItems
             }
             for(let i = 1; i <= groupNum; i++) {
                 const a = 'container'+i;
@@ -317,6 +328,7 @@ export default function ListInGroup(appProps) {
                  items: []   
                 }
             }
+            console.log('obj', obj)
             setContainer(obj)
             setAddChildActOpen(false)
             setGroupModalOpen(false)
@@ -348,6 +360,7 @@ export default function ListInGroup(appProps) {
     const onCloseResultModal = async () => {
         setShowGrouping(false)
         var teams = []
+        console.log('stages', stages)
         let stageId = stages[stages.length-1].id;
         console.log('stageid', stageId)
         await Promise.all(Object.keys(container).map((key, index) => {
@@ -443,21 +456,21 @@ export default function ListInGroup(appProps) {
         console.log('from localStorage', localStorage.getItem('usersInGroup'))
         console.log('groupItems', groupItems);
         const taskStatus = container;
-        const [columns, setColumns] = useState(taskStatus);
+        // const [columns, setColumns] = useState(taskStatus);
 
-        const onDragEnd = (result, columns, setColumns) => {
+        const onDragEnd = (result, container, setColumns) => {
             if (!result.destination) return;
             const { source, destination } = result;
           
             if (source.droppableId !== destination.droppableId) {
-              const sourceColumn = columns[source.droppableId];
-              const destColumn = columns[destination.droppableId];
+              const sourceColumn = container[source.droppableId];
+              const destColumn = container[destination.droppableId];
               const sourceItems = [...sourceColumn.items];
               const destItems = [...destColumn.items];
               const [removed] = sourceItems.splice(source.index, 1);
               destItems.splice(destination.index, 0, removed);
-              setColumns({
-                ...columns,
+              setContainer({
+                ...container,
                 [source.droppableId]: {
                   ...sourceColumn,
                   items: sourceItems
@@ -468,12 +481,12 @@ export default function ListInGroup(appProps) {
                 }
                 });
             } else {
-                const column = columns[source.droppableId];
+                const column = container[source.droppableId];
                 const copiedItems = [...column.items];
                 const [removed] = copiedItems.splice(source.index, 1);
                 copiedItems.splice(destination.index, 0, removed);
-                setColumns({
-                  ...columns,
+                setContainer({
+                  ...container,
                   [source.droppableId]: {
                     ...column,
                     items: copiedItems
@@ -481,12 +494,12 @@ export default function ListInGroup(appProps) {
                 });
             }
         };
-        useEffect(() => {
-            console.log('columns', columns);
-        }, [columns])
+        // useEffect(() => {
+        //     console.log('columns', columns);
+        // }, [columns])
         const onClickFinishGrouping = () => {
-            if(columns['main'].items.length === 0) {
-                setContainer(columns)
+            if(container['main'].items.length === 0) {
+                // setContainer(columns)
                 const stage = {
                     stageName: childActName,
                     grouping: true,
@@ -509,9 +522,9 @@ export default function ListInGroup(appProps) {
                 style={{ display: "flex", height: "100%", marginTop:'20px', backgroundColor:'#EEF1F4', overflowX:'scroll' }}
               >
                 <DragDropContext
-                  onDragEnd={(result) => onDragEnd(result, columns, setColumns)}
+                  onDragEnd={(result) => onDragEnd(result, container, setContainer)}
                 >
-                  {Object.entries(columns).map(([columnId, column], index) => {
+                  {Object.entries(container).map(([columnId, column], index) => {
                     return (
                       <div
                         style={{
