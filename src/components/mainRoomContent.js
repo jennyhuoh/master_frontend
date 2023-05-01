@@ -377,18 +377,14 @@ export default function MainRoomContent(pageMainRoomProps) {
 
     useEffect(() => {
         let announceInterval;
-        console.log('stableAnnounceContent change')
-        // if(stableAnnounceContent !== []) {
-        //     wsRef.current.emit('sendAnnouncement', {
-        //         content: stableAnnounceContent,
-        //         rooms: JSON.parse(localStorage.getItem('announcement'))
-        //     })
-        // }
-        if(stableAnnounceContent.length !== 0 && returnUserIndex() === -1) {
+        // console.log('stableAnnounceContent change', stableAnnounceContent)
+        if(returnUserIndex() === -1) {
             wsRef.current.emit('sendAnnouncement', {
                 content: stableAnnounceContent,
                 rooms: JSON.parse(localStorage.getItem('announcement'))
             })
+        }
+        if(stableAnnounceContent.length !== 0 && returnUserIndex() === -1) {
             console.log('stableAnnounceContent change & in the if')
             announceInterval = setInterval(() => {
                 wsRef.current.emit('sendAnnouncement', {
