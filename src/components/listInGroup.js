@@ -135,7 +135,7 @@ export default function ListInGroup(appProps) {
         setRows(data)
         console.log('data', data)
     }, [data])
-
+    
     useEffect(() => {
         let newArr = [];
         async function ParseNumIdToString(groupItem) {
@@ -347,7 +347,7 @@ export default function ListInGroup(appProps) {
                         </Box>
                         <Box style={{display:'flex', marginTop:'10px', width:'100%', justifyContent:'space-between'}}>
                             <Button onClick={() => setGroupModalOpen(false)} variant="contained" color='secondary' style={{fontWeight:'bold'}}>返回</Button> 
-                            <Button onClick={onClickGroupNum} variant="contained" style={{fontWeight:'bold', marginLeft:'15px'}}>下一步</Button> 
+                            <Button href="#group" onClick={onClickGroupNum} variant="contained" style={{fontWeight:'bold', marginLeft:'15px'}}>下一步</Button> 
                         </Box>
                         {/* <ResultModal /> */}
                     </Box>
@@ -425,7 +425,7 @@ export default function ListInGroup(appProps) {
                         </Table>
                     </TableContainer>
                     <Box style={{display:'flex', marginLeft:'670px', marginTop:'10px'}}>
-                        <Button variant="contained" color='secondary' style={{fontWeight:'bold'}} onClick={onCloseResultModal}>完成</Button> 
+                        <Button href="#activity" variant="contained" color='secondary' style={{fontWeight:'bold'}} onClick={onCloseResultModal}>完成</Button> 
                     </Box>
                 </Box>
             </Modal>
@@ -515,6 +515,9 @@ export default function ListInGroup(appProps) {
                 setAlertContent('組員尚未分配完成')
                 setAlertName(true);
             } 
+        }
+        const onClickCancelGrouping = () => {
+            setShowGrouping(false)
         }
           return (
             <div>
@@ -606,7 +609,7 @@ export default function ListInGroup(appProps) {
                   })}
                 </DragDropContext>
                 <Box style={{display:'flex', height:'40px', alignSelf:'end', justifySelf:'flex-end', right:'6vw', position:'absolute', backgroundColor:'#EEF1F4', zIndex:1200}}>
-                    <Button onClick={() => setShowGrouping(false)} variant="contained" color='secondary' style={{fontWeight:'bold'}}>取消</Button> 
+                    <Button href="#activity" onClick={onClickCancelGrouping} variant="contained" color='secondary' style={{fontWeight:'bold'}}>取消</Button> 
                     <Button onClick={onClickFinishGrouping} variant="contained" style={{fontWeight:'bold', marginLeft:'15px'}}>儲存分組</Button> 
                 </Box>
               </div>
@@ -619,6 +622,7 @@ export default function ListInGroup(appProps) {
         <Provider value={contextValue}>
             {displayAddForm && (
                 <Box m={'2vw 3vw 2vw 3vw'}>
+                    <div id="activity" style={{position:'absolute', top:'300px'}}></div>
                     <Paper elevation={3} style={{marginTop:'15px', backgroundColor:'white', padding:'2vw', marginBottom:'30px', borderRadius:'10px'}}>
                         <div style={{fontWeight:'bold', fontSize:'1.5vw'}}>新增討論活動</div>
                         <Divider style={{marginTop:'15px', borderColor:'#707070', marginBottom:'15px'}}/>
@@ -641,7 +645,7 @@ export default function ListInGroup(appProps) {
                             </Grid>
                         </Grid>
                         <p style={{color:'grey', fontSize:'4px', margin:'30px 0', padding:'0 20px'}}>3.活動規劃</p>
-                        <Box style={{display:'flex', padding:'0 20px'}}>
+                        <Box style={{display:'flex', padding:'0 20px'}} id="group">
                             <Button variant="contained" color="secondary" style={{width: '200px', height: '120px', borderRadius:'5px', display:'flex',flexDirection:'column', justifyContent:'center', alignItems:'center', border:'1.5px #BEBEBE dashed', marginRight:'15px'}} onClick={onClickAddChildAct}>
                                 <AddCircleOutline color="disabled" style={{fontSize:'55px', marginBottom:'8px'}} />
                                 <Typography color="gray" sx={{fontSize:'4px'}}>新增活動</Typography>
@@ -685,7 +689,7 @@ export default function ListInGroup(appProps) {
                 <Box style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
                     <div style={{fontWeight:'bold', fontSize:'1.5vw'}}>討論活動列表</div>
                     {localStorage.getItem('role') === 'teacher' && 
-                    <Button variant="contained" color='secondary' style={{fontWeight:'bold'}} onClick={() => {
+                    <Button href="#activity" variant="contained" color='secondary' style={{fontWeight:'bold'}} onClick={() => {
                         setStages([])
                         setDisplayAddForm(true)
                     }}><Add sx={{mr:0.8}} fontSize="small" />新增討論活動</Button>
