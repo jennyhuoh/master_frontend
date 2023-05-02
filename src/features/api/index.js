@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 const instance = axios.create({
-    baseURL:'http://localhost:3001/',
-    // baseURL: 'http://1c97-36-228-35-161.ngrok-free.app ',
+    // baseURL:'http://localhost:3001/',
+    baseURL: 'https://711b-140-115-126-172.ngrok-free.app',
     headers: {
         'X-Powered-By':'Express',
         'Content-Type':'application/json',
@@ -12,8 +12,8 @@ const instance = axios.create({
     timeout:20000,
 })
 const recordInstance = axios.create({
-    baseURL: 'http://localhost:3001/',
-    // baseURL: 'http://1c97-36-228-35-161.ngrok-free.app ',
+    // baseURL: 'http://localhost:3001/',
+    baseURL: 'https://711b-140-115-126-172.ngrok-free.app',
     headers: {
         'X-Powered-By': 'Express',
         'Content-Type': 'multipart/form-data',
