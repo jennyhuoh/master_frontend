@@ -1,6 +1,6 @@
 import { Box, Divider, Paper, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Button, Grid, TextField, Typography, Alert, Snackbar, Modal, Radio, IconButton } from "@mui/material";
 import React,{ useEffect, useState, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Add, AddCircleOutline, AddCircle, RemoveCircle } from '@mui/icons-material';
 import { LocalizationProvider, DateTimePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -55,7 +55,7 @@ const Rows = (props) => {
             }
             </TableCell>
             <TableCell style={{width:'5%', verticalAlign:'baseline'}} align="center">
-                <Button variant="contained" color='secondary'>編輯</Button>
+                <Button variant="contained" color='secondary' component={Link} to={`/group/${props.groupId}/activity/${props.row.id}`}>編輯</Button>
             </TableCell>
             <TableCell style={{width:'5%', verticalAlign:'baseline'}} align="center">
                 <Button variant="outlined" color='error' onClick={() => setAlertDeleteOpen(true)}>刪除</Button>
@@ -354,7 +354,6 @@ export default function ListInGroup(appProps) {
                 </Modal>
             </React.Fragment>
         );
-        
     }
 
     const onCloseResultModal = async () => {

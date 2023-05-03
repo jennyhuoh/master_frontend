@@ -18,6 +18,7 @@ import MainRoom from './pages/mainRoom';
 import AddGroup from './pages/addGroup';
 import BlankPage from './components/blankPage';
 import DiscussResult from './pages/discussResult';
+import EditActivity from './pages/editActivity';
 // import KeycloakPage from './keycloak';
 
 const queryClient = new QueryClient()
@@ -38,6 +39,7 @@ export default function App() {
         <Route path='/addGroup' element={<AddGroup />} />
         <Route path='/blankPage' element={<BlankPage />} />
         <Route path='/discussResult/:activityId' element={<Child4 />} />
+        <Route path='/group/:groupId/activity/:activityId' element={<Child5 />} />
       </Routes>
       <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
@@ -65,6 +67,12 @@ export default function App() {
     let {activityId} = useParams();
     return(
       <DiscussResult activityId={activityId} />
+    );
+  }
+  function Child5() {
+    let {groupId, activityId} = useParams();
+    return(
+      <EditActivity groupId={groupId} activityId={activityId} />
     );
   }
 }
