@@ -39,6 +39,7 @@ export default function DiscussGroupInfo(appProps) {
             setAlertOpen(true)
             localStorage.setItem('usersNum', selectedMembers.length)
             localStorage.setItem('usersInGroup', JSON.stringify(selectedMembers))
+            window.location.reload(true);
         }
     })
     const {mutate: mutateDelete} = useMutation(deleteGroup, {

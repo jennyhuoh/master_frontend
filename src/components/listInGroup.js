@@ -557,7 +557,9 @@ export default function ListInGroup(appProps) {
                                       : "#5A81A8",
                                     padding: 4,
                                     width: 150,
-                                    minHeight: 440
+                                    minHeight: 440,
+                                    maxHeight: 440,
+                                    overflowY: 'scroll'
                                   }}
                                 >
                                   {column.items.map((item, index) => {
