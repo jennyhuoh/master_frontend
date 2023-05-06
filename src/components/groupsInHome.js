@@ -54,7 +54,7 @@ const RecentCard = (props) => {
         let rooms = []
         rooms[0] = await props.id
         localStorage.setItem('mainRoomId', props.id)
-        openInNewTab(`http://localhost:3000/mainRoom/${props.meetingId}/${props.id}`)
+        openInNewTab(`http://140.115.126.43:3000/mainRoom/${props.meetingId}/${props.id}`)
         localStorage.setItem('discussType', 'all');
         localStorage.setItem('announcement', JSON.stringify(rooms));
     }

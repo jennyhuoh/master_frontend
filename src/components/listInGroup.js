@@ -139,7 +139,7 @@ export default function ListInGroup(appProps) {
     useEffect(() => {
         let newArr = [];
         async function ParseNumIdToString(groupItem) {
-            await Promise.all(groupItem.map(async (item) => {
+            await Promise.all(groupItem?.map(async (item) => {
                 const data = await item
                 data.id = await data.id.toString()
                 newArr.push(data);
