@@ -1,8 +1,8 @@
 import websocket, {io} from 'socket.io-client';
 import React, { useRef, useEffect, useState, useCallback, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Box, Button, IconButton, Fab, Tooltip, Backdrop, CircularProgress, Typography, AppBar, Drawer, Divider, TextField, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
-import { Mic, MicOff, ExitToApp, Groups2, CastForEducation, Textsms, ChevronLeft, ChevronRight, Send, Campaign, CloseRounded, BackHand } from '@mui/icons-material';
+import { Box, Button, IconButton, Fab, Tooltip, Backdrop, CircularProgress, Typography, AppBar, Drawer, Divider, TextField, Dialog, DialogTitle, DialogContent, DialogActions, ToggleButtonGroup, ToggleButton } from '@mui/material';
+import { Mic, MicOff, ExitToApp, Groups2, CastForEducation, Textsms, ChevronLeft, ChevronRight, Send, Campaign, CloseRounded, AutoGraph } from '@mui/icons-material';
 import { useStateWithCallback } from '../hooks/useStateWithCallback';
 import { createRecord } from '../features/api';
 import { useMutation } from 'react-query';
@@ -77,6 +77,9 @@ export default function MainRoomContent(pageMainRoomProps) {
     const [releasedAnnounceContent, setReleasedAnnounceContent] = useState(null);
     const [raiseHandArr, setRaiseHandArr] = useState([]);
     const [openCondition, setOpenCondition] = useState(false);
+    const [watchConditionTeams, setWatchConditionTeams] = useState();
+    const [selectedWatchTeam, setSelectedWatchTeam] = useState();
+    const [conditionClickable, setConditionClickable] = useState(false);
     const messagesEndRef = useRef(null);
     const {mutate} = useMutation(createRecord)
 
@@ -370,7 +373,11 @@ export default function MainRoomContent(pageMainRoomProps) {
                 })
                 wsRef.current.emit('openGroupDiscuss', {roomId: roomID, teamDetail})
                 // 這裡打開檢視討論狀況按鈕權限
-                setOpenCondition(true);
+                console.log('team detail', teamDetail)
+                setWatchConditionTeams(teamDetail)
+                setSelectedWatchTeam(teamDetail[0].id)
+                setConditionClickable(true);
+                
                 // console.log('checkingStage', checkingStage);
                 // localStorage.setItem('stageId', checkingStage.id)
             }
@@ -480,6 +487,11 @@ export default function MainRoomContent(pageMainRoomProps) {
         console.log('openDrawer change', openDrawer)
     }, [openDrawer])
 
+    const onChangeSelectedTeam = (event, newEvent) => {
+        console.log('newEvent', newEvent)
+        setSelectedWatchTeam(newEvent)
+    }
+
     if(true){
         return(
             <>
@@ -557,6 +569,13 @@ export default function MainRoomContent(pageMainRoomProps) {
                 <Tooltip title="回主會議室">
                     <Fab onClick={onClickBackToMain} aria-label="leave" sx={{color:'#EEF1F4'}} style={{position:'fixed', right:200, bottom:40}}>
                         <CastForEducation sx={{fontSize:34, color:'#2B3143'}} />
+                    </Fab>
+                </Tooltip> : ""
+                }
+                {conditionClickable ? 
+                <Tooltip title="查看討論狀況">
+                    <Fab onClick={() => setOpenCondition(true)} aria-label="leave" sx={{color:'#EEF1F4'}} style={{position:'fixed', right:280, bottom:40}}>
+                        <AutoGraph sx={{fontSize:34, color:'#2B3143'}} />
                     </Fab>
                 </Tooltip> : ""
                 }
@@ -664,6 +683,27 @@ export default function MainRoomContent(pageMainRoomProps) {
                     <Button onClick={() => setOpenAnnouncement(false)} variant="contained" color='secondary' style={{fontWeight:'bold'}}>取消</Button> 
                     <Button variant="contained" style={{fontWeight:'bold', marginLeft:'15px'}} onClick={onClickSendAnnouncement}>發送</Button>
                 </DialogActions>
+            </Dialog>
+            <Dialog
+                fullWidth={true}
+                open={openCondition}
+                onClose={() => setOpenCondition(false)}
+                PaperProps={{
+                    sx: {
+                        height: '70vh'
+                    }
+                }}
+                maxWidth='md'
+            >
+                <ToggleButtonGroup
+                    value={selectedWatchTeam}
+                    onChange={onChangeSelectedTeam}
+                    exclusive
+                >
+                    {watchConditionTeams?.map((team) => (
+                        <ToggleButton key={team.id} style={{fontWeight:'bold'}} value={team.id}>{team.teamName}</ToggleButton>
+                    ))}
+                </ToggleButtonGroup>
             </Dialog>
             {raiseHandArr !== [] &&
             <Box style={{position:'fixed', zIndex:1000, top:'70px', ...((openDrawer === true) ? {left:'260px'} : {left:'20px'})}}>
