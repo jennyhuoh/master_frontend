@@ -30,7 +30,7 @@ const Rows = (props) => {
         let rooms = []
         rooms[0] = await props.row.id
         localStorage.setItem('mainRoomId', props.row.id)
-        openInNewTab(`http://140.115.126.43:3000/mainRoom/${props.groupId}/${props.row.id}`)
+        openInNewTab(`http://localhost:3000/mainRoom/${props.groupId}/${props.row.id}`)
         localStorage.setItem('discussType', 'all');
         localStorage.setItem('announcement', JSON.stringify(rooms));
     }
@@ -148,6 +148,13 @@ export default function ListInGroup(appProps) {
         ParseNumIdToString(JSON.parse(localStorage.getItem('usersInGroup')));
         setGroupItems(newArr)
     }, [])
+
+    useEffect(() => {
+        if(localStorage.getItem('reloadTime') === '0') {
+            window.location.reload()
+            localStorage.setItem('reloadTime', '1')
+        }
+    }, [localStorage.getItem('usersInGroup')])
 
     const sensors = useSensors(
         useSensor(PointerSensor, {

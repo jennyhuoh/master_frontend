@@ -1,12 +1,12 @@
 import './App.css';
 import { Routes, Route, useParams } from 'react-router-dom';
-import { ReactKeycloakProvider } from '@react-keycloak/web';
+// import { ReactKeycloakProvider } from '@react-keycloak/web';
 import { ReactQueryDevtools } from 'react-query/devtools';
 import { 
   QueryClientProvider,
   QueryClient,
 } from 'react-query';
-import keycloak from './keycloak';
+// import keycloak from './keycloak';
 import Login from './pages/login';
 import MeetingRoom from './pages/meetingRoom';
 import InMeetingRoom from './pages/inMeetingRoom';
@@ -19,13 +19,14 @@ import AddGroup from './pages/addGroup';
 import BlankPage from './components/blankPage';
 import DiscussResult from './pages/discussResult';
 import EditActivity from './pages/editActivity';
+import Register from './pages/register';
 // import KeycloakPage from './keycloak';
 
 const queryClient = new QueryClient()
 
 export default function App() {
   return (
-    <ReactKeycloakProvider authClient={keycloak}>
+    // <ReactKeycloakProvider authClient={keycloak}>
       <QueryClientProvider client={queryClient}>
       <Routes>
         <Route path='/' element={<Login />} />
@@ -40,10 +41,11 @@ export default function App() {
         <Route path='/blankPage' element={<BlankPage />} />
         <Route path='/discussResult/:activityId' element={<Child4 />} />
         <Route path='/group/:groupId/activity/:activityId' element={<Child5 />} />
+        <Route path='/register' element={<Register />} />
       </Routes>
-      <ReactQueryDevtools initialIsOpen={false} />
+      {/* <ReactQueryDevtools initialIsOpen={false} /> */}
       </QueryClientProvider>
-    </ReactKeycloakProvider>
+    // </ReactKeycloakProvider>
   );
   function Child() {
     let {discussId} = useParams();

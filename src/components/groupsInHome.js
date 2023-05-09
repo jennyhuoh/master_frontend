@@ -22,7 +22,7 @@ const Groups = (props) => {
                         </Badge>               
                         {props.name}
                     </Typography></Grid>
-                    <Grid item xs={2} style={{marginTop:'-5px'}}><IconButton size="small" component={Link} to={`/group/${props.meetingId}`}><MoreHoriz sx={{color:'grey'}} /></IconButton></Grid>
+                    <Grid item xs={2} style={{marginTop:'-5px'}}><IconButton onClick={localStorage.setItem('reloadTime', '0')} size="small" component={Link} to={`/group/${props.meetingId}`}><MoreHoriz sx={{color:'grey'}} /></IconButton></Grid>
                 </Grid>
                 <Box sx={{mb:1, mt:1}} style={{display:'flex'}}>
                     <People sx={{color:'grey', mr:1.5, mt:0.5}} fontSize="small" />
@@ -54,7 +54,7 @@ const RecentCard = (props) => {
         let rooms = []
         rooms[0] = await props.id
         localStorage.setItem('mainRoomId', props.id)
-        openInNewTab(`http://140.115.126.43:3000/mainRoom/${props.meetingId}/${props.id}`)
+        openInNewTab(`http://localhost:3000/mainRoom/${props.meetingId}/${props.id}`)
         localStorage.setItem('discussType', 'all');
         localStorage.setItem('announcement', JSON.stringify(rooms));
     }

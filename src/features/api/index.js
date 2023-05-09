@@ -1,24 +1,22 @@
 import axios from 'axios';
 
 const instance = axios.create({
-    // baseURL:'http://localhost:3001/',
-    baseURL: 'https://711b-140-115-126-172.ngrok-free.app',
+    baseURL:'http://localhost:3001/',
+    // baseURL: 'https://711b-140-115-126-172.ngrok-free.app',
     headers: {
         'X-Powered-By':'Express',
         'Content-Type':'application/json',
-        'Access-Control-Allow-Origin':'*',
-        "ngrok-skip-browser-warning":"any"
+        'Access-Control-Allow-Origin':'*'
     },
     timeout:20000,
 })
 const recordInstance = axios.create({
-    // baseURL: 'http://localhost:3001/',
-    baseURL: 'https://711b-140-115-126-172.ngrok-free.app',
+    baseURL: 'http://localhost:3001/',
+    // baseURL: 'https://711b-140-115-126-172.ngrok-free.app',
     headers: {
         'X-Powered-By': 'Express',
         'Content-Type': 'multipart/form-data',
-        'Access-Control-Allow-Origin': '*',
-        "ngrok-skip-browser-warning":"any"
+        'Access-Control-Allow-Origin': '*'
     },
     timeout: 20000,
 })
@@ -44,8 +42,10 @@ instance.interceptors.response.use(
     }
 )
 
+// User Login
+export const userLogin = data => instance.post('/login', data);
 // create or get a user
-export const createOrGetUser = data => instance.post('/user', data);
+export const createUser = data => instance.post('/register', data);
 // create a group
 export const createGroup = data => instance.post('/group', data);
 // create a stage

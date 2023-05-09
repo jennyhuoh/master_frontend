@@ -1,4 +1,4 @@
-import websocket, { Socket, connect } from 'socket.io-client';
+import websocket, {io} from 'socket.io-client';
 import React, { useRef, useEffect, useState, useCallback, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Box, Button, IconButton, Fab, Tooltip, Backdrop, CircularProgress, Typography, AppBar, Drawer, Divider, TextField, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
@@ -75,7 +75,8 @@ export default function MainRoomContent(pageMainRoomProps) {
     const [announceContent, setAnnounceContent] = useState("");
     const [stableAnnounceContent, setStableAnnounceContent] = useState([]);
     const [releasedAnnounceContent, setReleasedAnnounceContent] = useState(null);
-    const [raiseHandArr, setRaiseHandArr] = useState([])
+    const [raiseHandArr, setRaiseHandArr] = useState([]);
+    const [openCondition, setOpenCondition] = useState(false);
     const messagesEndRef = useRef(null);
     const {mutate} = useMutation(createRecord)
 
@@ -100,7 +101,7 @@ export default function MainRoomContent(pageMainRoomProps) {
     useEffect(() => {
       
         const initChat = async () => {
-            wsRef.current = websocket('https://711b-140-115-126-172.ngrok-free.app') 
+            wsRef.current = io('http://localhost:3001/') 
             await captureMedia();
             addNewPeer({...user, muted:true}, () => {
                 const localElement = audioElements.current[user.id];
@@ -368,6 +369,8 @@ export default function MainRoomContent(pageMainRoomProps) {
                     localStorage.setItem('announcement', JSON.stringify(rooms));
                 })
                 wsRef.current.emit('openGroupDiscuss', {roomId: roomID, teamDetail})
+                // 這裡打開檢視討論狀況按鈕權限
+                setOpenCondition(true);
                 // console.log('checkingStage', checkingStage);
                 // localStorage.setItem('stageId', checkingStage.id)
             }

@@ -1,81 +1,85 @@
-// import PostsList from "../features/posts/postsList";
-import { useKeycloak } from '@react-keycloak/web';
 import { useEffect, useState } from 'react';
-import { Box, Button, Typography } from '@mui/material';
-import { Groups2TwoTone, PersonOutlineTwoTone } from '@mui/icons-material';
+import { Box, Button, Typography, Radio, TextField, InputAdornment, IconButton } from '@mui/material';
 import { useMutation } from 'react-query';
+import { userLogin } from '../features/api';
+import { useNavigate } from 'react-router-dom';
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 import Home from './home';
-import { createOrGetUser } from '../features/api';
 
 export default function Login() {
-    const { keycloak } = useKeycloak();
-    const [ flag, setFlag ] = useState(0);
-    const { mutate } = useMutation(createOrGetUser, {
+    let navigate = useNavigate();
+    // 還須加上authenticated 判斷
+    const [radioValue, setRadioValue] = useState('student');
+    const [userEmail, setUserEmail] = useState('');
+    const [userPassword, setUserPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const { mutate } = useMutation(userLogin, {
         onSuccess: async(res) => {
             localStorage.setItem('userId', res.data.id);
             localStorage.setItem('userEmail',res.data.userEmail);
             localStorage.setItem('userName', res.data.userName);
             localStorage.setItem('role', res.data.userRole);
+            localStorage.setItem('loginAuthenticated', 'true');
+        },
+        onError: async (msg) => {
+            console.log('error msg', msg.response.data.status)
+            if(msg.response.data.status === 2) {
+                alert('該使用者電子郵件不存在')
+            } else if(msg.response.data.status === 3) {
+                alert('密碼錯誤')
+            }
         }
     })
-
     useEffect(() => {
-        if(keycloak.authenticated){
-            keycloak.loadUserInfo().then((result) => {
-                mutate({
-                    userName: result.family_name + result.given_name,
-                    userEmail: result.email,
-                    userRole: localStorage.getItem('role')
-                })
-                localStorage.setItem('smallName', result.given_name);
-            })
+        if(localStorage.getItem('loginAuthenticated') === 'true') {
+            navigate('/home')
         }
-    }, [flag])
+    }, [localStorage.getItem('loginAuthenticated')])
 
-    useEffect(() => {
-        if(keycloak.authenticated){setFlag(1)}
-    }, [keycloak.authenticated])
-
-    const onClickStudent = () => {
-        keycloak.login();
-        localStorage.setItem('role', 'student');
-    }
-    const onClickTeacher = () => {
-        keycloak.login();
-        localStorage.setItem('role', 'teacher');
+    const onClickLogin = () => {
+        if((userEmail !== '') && (userPassword !== '')) {
+            mutate({
+                userEmail: userEmail,
+                userPassword: userPassword
+            })
+        } else {
+            alert('欄位不可為空!')
+        }
     }
 
     return(
-        <>
-        {keycloak.authenticated ?
-            <>
-            <Home />
-            </>
-            :
+        <Box>
             <Box style={{width:'100vw', height:'100vh', display:'flex', justifyContent:'center', alignItems:'center'}} sx={{backgroundColor:'#2B3143'}}>
-                <Box style={{width:'40%', height:'42%', backgroundColor:'white', fontSize:'2.6vw', fontWeight:'semi-bold', borderRadius:'10px', padding:'40px', display:'flex', alignItems:'center', flexDirection:'column', marginTop:0}}>
-                    登入身份
-                    <Box style={{display:'flex', marginTop:'60px', width:'100%', height:'46%', alignItems:'center', justifyContent:'space-around'}}>
-                        <Button style={{width:'40%', height:'100%', display:'flex', alignItems:'center', flexDirection:'column', padding:'20px'}} variant="contained" onClick={onClickStudent}>
-                            <Groups2TwoTone style={{fontSize:'2.6vw'}} />
-                            <Typography style={{fontWeight:'bold', fontSize:'1.8vw'}} >學生</Typography>
-                        </Button>
-                        <Button style={{width:'40%', height:'100%', display:'flex', alignItems:'center', flexDirection:'column', padding:'20px'}} variant="contained" onClick={onClickTeacher}>
-                            <PersonOutlineTwoTone style={{fontSize:'2.6vw'}} />
-                            <Typography style={{fontWeight:'bold', fontSize:'1.8vw'}} >老師</Typography>
-                        </Button>
-                    </Box>
+                <Box style={{width:'30%', height:'40%', backgroundColor:'white', borderRadius:'10px', padding:'40px 60px', display:'flex', alignItems:'center', flexDirection:'column', marginTop:0}}>
+                    <Typography style={{alignSelf:'flex-start', fontSize:'2vw', fontWeight:'bold'}}>登入</Typography>
+                    <TextField type='email' style={{width:'100%', marginTop:'20px'}} InputLabelProps={{shrink:true,}} variant="standard" label="1.帳號(電子郵件)" color="warning" required value={userEmail} onChange={(e) => setUserEmail(e.target.value)} />
+                    <TextField
+                        style={{width:'100%', marginTop:'20px'}} 
+                        InputLabelProps={{shrink:true,}} 
+                        variant="standard" 
+                        label="2.密碼" 
+                        color="warning" 
+                        required 
+                        value={userPassword} 
+                        onChange={(e) => setUserPassword(e.target.value)}
+                        type={showPassword ? 'text' : 'password'}
+                        InputProps={{
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                  <IconButton
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    edge="end"
+                                  >
+                                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                                  </IconButton>
+                                </InputAdornment>
+                            )
+                        }}    
+                    />
+                    <Button onClick={onClickLogin} variant="contained" style={{fontWeight:'bold', width:'100%', marginTop:'35px' }}>登入</Button>
+                    <Button onClick={() => navigate('/register')} variant="contained" color='secondary' style={{fontWeight:'bold', marginTop:'16px', width:'100%'}}>前往註冊</Button> 
                 </Box>
-            </Box>
-        }
-        </>
-        // <Box>
-        //     <Header />
-            
-        //     <Button variant="contained" component={Link} to="/meetingRoom">Go to the meeting</Button>
-
-        //     <Button variant="contained" component={Link} to="/audioRoom">Go to the audioRoom</Button>
-        //     <Button variant="contained" component={Link} to="/home">Go home</Button>
-        // </Box>
+            </Box> 
+        </Box> 
     );
 }

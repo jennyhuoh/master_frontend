@@ -1,6 +1,6 @@
 import { Box, Grid, Button, Container, Typography, IconButton, Toolbar, AppBar, Drawer, Divider, List, ListItemButton, Collapse, ListItemText } from "@mui/material";
 import { styled, useTheme } from "@mui/material/styles";
-import { useKeycloak } from "@react-keycloak/web";
+// import { useKeycloak } from "@react-keycloak/web";
 import { Menu, ChevronLeft, ChevronRight, ExpandLess, ExpandMore } from "@mui/icons-material";
 import { useState } from 'react';
 import { Link, useNavigate } from "react-router-dom";
@@ -22,7 +22,7 @@ export default function Header() {
     const [openDrawer, setOpenDrawer] = useState(false);
     const [openHome, setOpenHome] = useState(true);
     const [openHistory, setOpenHistory] = useState(false);
-    const { keycloak } = useKeycloak();
+    // const { keycloak } = useKeycloak();
     let navigate = useNavigate();
 
     const handleDrawerOpen = () => {
@@ -41,11 +41,12 @@ export default function Header() {
     };
     const onClickLogout = () => {
         navigate('/')
-        keycloak.logout();
+        // keycloak.logout();
         localStorage.setItem('userId', null);
         localStorage.setItem('userEmail', null);
         localStorage.setItem('userName', null);
         localStorage.setItem('role', null);
+        localStorage.setItem('loginAuthenticated', 'false');
     }
 
     return(
@@ -72,16 +73,16 @@ export default function Header() {
                 <Box style={{display:'flex', backgroundColor:'white', borderRadius:'3px', color:'#2B3143', padding:'5px 10px', marginRight:'15px'}}>
                     <Typography style={{marginRight:'5px', fontSize:'14px', alignSelf:'center', fontWeight:'bolder'}}>歡迎，{localStorage.getItem('userName')}</Typography>
                     <AvatarGroup
-                        avatars={[`${localStorage.getItem('smallName')}`]}
-                        size={26}
-                        fontSize={0.4}
-                        initialCharacters={2}
+                        avatars={[`${localStorage.getItem('userName')}`]}
+                        size={28}
+                        fontSize={0.3}
+                        initialCharacters={3}
                         hideTooltip={true}
                     />
                 </Box>
-                {keycloak.authenticated ?
+                {localStorage.getItem('loginAuthenticated') === 'true' ?
                     <Button variant="outlined" color="secondary" onClick={onClickLogout}>登出</Button> :
-                    <Button variant="outlined" color="secondary" onClick={() => keycloak.login()}>登入</Button>
+                    <Button variant="outlined" color="secondary" onClick={() => navigate('/')}>登入</Button>
                 }
                 </Toolbar>
             </AppBar>
