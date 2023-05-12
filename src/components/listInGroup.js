@@ -8,7 +8,7 @@ import { DndContext, closestCenter, DragOverlay, MeasuringStrategy, useSensors, 
 import { arrayMove, SortableContext, horizontalListSortingStrategy } from "@dnd-kit/sortable";
 import { SortableItem } from "./sortableItem";
 import { useMutation, useQuery } from 'react-query';
-import { createStage, saveStagesSequence, createTeams, deleteStage, getTeams, createActivity, getActivities, deleteActivity } from "../features/api";
+import { createStage, saveStagesSequence, createTeams, deleteStage, getTeams, createActivity, getActivities, deleteActivity, getTemplates } from "../features/api";
 import { Item } from './item';
 import context,{ Provider } from '../context';
 import { restrictToHorizontalAxis, restrictToWindowEdges } from "@dnd-kit/modifiers";
@@ -124,6 +124,7 @@ export default function ListInGroup(appProps) {
     const [rows, setRows] = useState(undefined)
     const [showGrouping, setShowGrouping] = useState(false);
     const [container, setContainer] = useState({});
+    const [templateContent, setTemplateContent] = useState([])
     const {data, isLoading, refetch, status} = useQuery(['lists', groupId], () =>
     getActivities(groupId), {
         onSuccess: () => {
@@ -219,7 +220,12 @@ export default function ListInGroup(appProps) {
             refetch();
         }
     })
-
+    const {mutate: mutateGetTemplates} = useMutation(getTemplates, {
+        onSuccess: (data) => {
+            console.log('get templates data', data)
+            setTemplateContent(data)
+        }
+    })
     useEffect(() => {
         if(childActName === '' && radioValue === 'group' ) {
             setRadioValue('all')
@@ -335,6 +341,11 @@ export default function ListInGroup(appProps) {
                  items: []   
                 }
             }
+            // console.log('userId', parseInt(localStorage.getItem('userId')))
+            mutateGetTemplates({
+                id: groupId,
+                userId: parseInt(localStorage.getItem('userId')),
+            })
             console.log('obj', obj)
             setContainer(obj)
             setAddChildActOpen(false)
@@ -617,7 +628,11 @@ export default function ListInGroup(appProps) {
                   })}
                 </DragDropContext>
                 <Box style={{display:'flex', height:'40px', alignSelf:'end', justifySelf:'flex-end', right:'6vw', position:'absolute', backgroundColor:'#EEF1F4', zIndex:1200}}>
-                    <Button href="#activity" onClick={onClickCancelGrouping} variant="contained" color='secondary' style={{fontWeight:'bold'}}>取消</Button> 
+                    {templateContent?.length === 0 ?
+                    <Button disabled variant='outlined' color='warning' style={{fontWeight:'bold'}}>使用分組樣板</Button> : 
+                    <Button variant='outlined' color='warning' style={{fontWeight:'bold'}}>使用分組樣板</Button> 
+                    }
+                    <Button href="#activity" onClick={onClickCancelGrouping} variant="contained" color='secondary' style={{fontWeight:'bold', marginLeft:'15px'}}>取消</Button> 
                     <Button onClick={onClickFinishGrouping} variant="contained" style={{fontWeight:'bold', marginLeft:'15px'}}>儲存分組</Button> 
                 </Box>
               </div>

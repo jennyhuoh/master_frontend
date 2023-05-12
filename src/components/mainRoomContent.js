@@ -328,7 +328,7 @@ export default function MainRoomContent(pageMainRoomProps) {
                     formData.append("recording", audioBlob)
                     formData.append("name", localStorage.getItem('userName'))
                     formData.append("userId", localStorage.getItem('userId'))
-                    if(target) {
+                    if(target !== null) {
                        formData.append("targetId", target.id)
                        formData.append("targetName", target.name) 
                     }

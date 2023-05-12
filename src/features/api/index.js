@@ -143,6 +143,13 @@ export const getUserActivities = async(id) => {
     const data = await response.data;
     return data;
 }
+// Get usable teamTemplates
+export const getTemplates = async({id, userId}) => {
+    // console.log('userId', userId)
+    const response = await instance.get(`/group/${id}/${userId}/activity/stage/teamTemplate`);
+    const data = await response.data;
+    return data
+}
 
 // Delete a stage
 export const deleteStage = (id, data) => instance.delete(`/stage/${id}`, data);
