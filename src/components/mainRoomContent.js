@@ -80,6 +80,8 @@ export default function MainRoomContent(pageMainRoomProps) {
     const [watchConditionTeams, setWatchConditionTeams] = useState();
     const [selectedWatchTeam, setSelectedWatchTeam] = useState();
     const [conditionClickable, setConditionClickable] = useState(false);
+    const [clickedTarget, setClickedTarget] = useState(false);
+    const [target, setTarget] = useState(null);
     const messagesEndRef = useRef(null);
     const {mutate} = useMutation(createRecord)
 
@@ -298,7 +300,7 @@ export default function MainRoomContent(pageMainRoomProps) {
         if(peerId !== user.id) {
             return;
         }
-        // 需要多判斷是否為分組討論
+        // 判斷是否為分組討論
         if(localStorage.getItem('discussType') === 'group'){
             if(isMute === true) {
                 setRecordingStatus("recording")
@@ -325,6 +327,11 @@ export default function MainRoomContent(pageMainRoomProps) {
                     let formData = new FormData();
                     formData.append("recording", audioBlob)
                     formData.append("name", localStorage.getItem('userName'))
+                    formData.append("userId", localStorage.getItem('userId'))
+                    if(target) {
+                       formData.append("targetId", target.id)
+                       formData.append("targetName", target.name) 
+                    }
                     setAudioChunks([])
                     console.log('url', audioUrl)
                     console.log('blob', audioBlob)
@@ -492,6 +499,14 @@ export default function MainRoomContent(pageMainRoomProps) {
         setSelectedWatchTeam(newEvent)
     }
 
+    const onClickTargetBtn = (name, id) => {
+        setClickedTarget(true)
+        setTarget({
+            id: id,
+            name: name
+        })
+    }
+
     if(true){
         return(
             <>
@@ -526,6 +541,11 @@ export default function MainRoomContent(pageMainRoomProps) {
                                     <Mic color="secondary" />
                                 </IconButton>)
                                 }
+                                {recordingStatus === 'recording' && !clickedTarget ?
+                                peer.name !== localStorage.getItem('userName') ?
+                                (<Button onClick={() => onClickTargetBtn(peer.name, peer.id)} variant='contained' style={{position:'absolute', bottom:'-60px', fontWeight:'bold', width:'110%', left:'-4px'}}>對{peer.name}發言</Button>)
+                                : (<Button onClick={() => onClickTargetBtn(peer.name, peer.id)} variant='contained' style={{position:'absolute', bottom:'-60px', fontWeight:'bold', width:'110%', left:'-4px'}}>開啟新話題</Button>)
+                                : ""}
                             </div>
                              <h4 style={{color:'white'}}>{peer.name}</h4>
                         </div>
