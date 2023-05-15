@@ -4,10 +4,11 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Box, Button, IconButton, Fab, Tooltip, Backdrop, CircularProgress, Typography, AppBar, Drawer, Divider, TextField, Dialog, DialogTitle, DialogContent, DialogActions, ToggleButtonGroup, ToggleButton } from '@mui/material';
 import { Mic, MicOff, ExitToApp, Groups2, CastForEducation, Textsms, ChevronLeft, ChevronRight, Send, Campaign, CloseRounded, AutoGraph } from '@mui/icons-material';
 import { useStateWithCallback } from '../hooks/useStateWithCallback';
-import { createRecord } from '../features/api';
+import { createRecord, getRecordings } from '../features/api';
 import { useMutation } from 'react-query';
 import { styled, useTheme } from "@mui/material/styles";
-import { v4 as uuidv4 } from 'uuid'; 
+import { v4 as uuidv4 } from 'uuid';
+import { Network } from "vis-network";
 import freeice from 'freeice';
 import AvatarGroup from 'react-avatar-group';
 import randomColor from 'randomcolor';
@@ -82,15 +83,53 @@ export default function MainRoomContent(pageMainRoomProps) {
     const [conditionClickable, setConditionClickable] = useState(false);
     const [clickedTarget, setClickedTarget] = useState(false);
     const [target, setTarget] = useState(null);
+    const [discussResults, setDiscussResults] = useState(null);
+    const [nodes, setNodes] = useState(null);
+    const [edges, setEdges] = useState(null);
+    const visJsRef = useRef(null);
     const messagesEndRef = useRef(null);
     const {mutate} = useMutation(createRecord)
-
+    const {mutate: mutateGetDiscuss} = useMutation(getRecordings, {
+        onSuccess: (data) => {
+            console.log('selected team data', data)
+            setDiscussResults(data)
+        }
+    })
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({behavior: 'smooth'});
     }
+
     useEffect(() => {
         scrollToBottom();
     }, [allMessages])
+
+    useEffect(() => {
+        if(nodes !== null) {
+            const network = visJsRef.current && new Network(visJsRef.current, {nodes, edges}, {
+                autoResize: false,
+                edges: {
+                    color: "#411811"
+                },
+                nodes: {
+                    size: 20,
+                    font: {
+                        size: 16
+                    }
+                },
+                physics: {
+                    enabled: false,
+                    solver: 'repulsion',
+                    repulsion: {
+                        nodeDistance: 400
+                    },
+                    barnesHut: {
+                        springConstant: 0,
+                        avoidOverlap: 0.2
+                    }
+                }
+            })
+        }
+    }, [visJsRef, nodes, edges])
 
     const addNewPeer = useCallback((newPeer, cb) => {
         const lookingFor = peers.find((peer) => peer.id === newPeer.iD);
@@ -301,7 +340,7 @@ export default function MainRoomContent(pageMainRoomProps) {
             return;
         }
         // 判斷是否為分組討論
-        if(localStorage.getItem('discussType') === 'group'){
+        if(localStorage.getItem('discussType') === 'group' && localStorage.getItem('role') !== 'teacher'){
             if(isMute === true) {
                 setRecordingStatus("recording")
                 mediaRecorder.current.start()
@@ -317,6 +356,7 @@ export default function MainRoomContent(pageMainRoomProps) {
                 }
                 setAudioChunks(localChunks);
             } else if(isMute === false) {
+                setClickedTarget(false)
                 setRecordingStatus("inactive")
                 mediaRecorder.current.stop()
                 mediaRecorder.current.onstop = () => {
@@ -391,6 +431,13 @@ export default function MainRoomContent(pageMainRoomProps) {
             console.log('stageInfo', stageInfo)
         }
     }, [checkingStage])
+    useEffect(() => {
+        setNodes(null)
+        setEdges(null)
+        if(watchConditionTeams) {
+            setSelectedWatchTeam(watchConditionTeams[0].id)
+        }
+    }, [watchConditionTeams])
 
     useEffect(() => {
         let announceInterval;
@@ -506,6 +553,59 @@ export default function MainRoomContent(pageMainRoomProps) {
             name: name
         })
     }
+    useEffect(() => {
+        if(openCondition) {
+            // mutateGetDiscuss({
+            //     stageId: localStorage.getItem('stageId'),
+            //     teamId: selectedWatchTeam
+            // })
+            const interval = setInterval(() => {
+                mutateGetDiscuss({
+                    stageId: localStorage.getItem('stageId'),
+                    teamId: selectedWatchTeam
+                })
+                if(!openCondition) {
+                    clearInterval(interval);
+                }
+            }, 5000)
+        }
+    }, [openCondition])
+
+    useEffect(() => {
+        if(discussResults !== null) {
+            console.log('watch condition teams', watchConditionTeams)
+          arrangeNode();
+        }
+        let nodeArr = []
+        let edgeArr = []
+        async function arrangeNode() {
+            // const filterStage = stageInfo.length === 1 ? stageInfo[0] : stageInfo.filter((stage) => stage.id === selectValue)
+            const filterTeam = await watchConditionTeams.filter((team) => team.id === selectedWatchTeam)
+            // console.log('stage', filterStage)
+            console.log('team', filterTeam)
+            await Promise.all(filterTeam[0].teamMembers.map((member) => {
+                const data = {
+                    id: member.id,
+                    label: member.label
+                }
+                nodeArr.push(data)
+            })).then(() => {
+                setNodes(nodeArr)
+            }).then(async () => {
+                await Promise.all(discussResults?.map((item) => {
+                    const data = {
+                        from: item.info.recordAuthorId,
+                        to: item.info.recordTargetId,
+                        arrows:'to'
+                    }
+                    edgeArr.push(data)
+                }))
+            }).then(() => {
+                setEdges(edgeArr)
+            })
+            
+        }
+      }, [discussResults])
 
     if(true){
         return(
@@ -724,6 +824,10 @@ export default function MainRoomContent(pageMainRoomProps) {
                         <ToggleButton key={team.id} style={{fontWeight:'bold'}} value={team.id}>{team.teamName}</ToggleButton>
                     ))}
                 </ToggleButtonGroup>
+                <Box style={{height:'57vh'}}>
+                    <div ref={visJsRef} style={{height:'80%'}}/>
+                </Box>
+                <Box style={{display:'flex', justifyContent:'flex-end', height:'6vh'}}><Button onClick={() => setOpenCondition(false)} variant='contained' style={{fontWeight:'bold', marginRight:'20px', alignSelf:'end'}}>關閉</Button></Box>
             </Dialog>
             {raiseHandArr !== [] &&
             <Box style={{position:'fixed', zIndex:1000, top:'70px', ...((openDrawer === true) ? {left:'260px'} : {left:'20px'})}}>
