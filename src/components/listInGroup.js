@@ -30,7 +30,8 @@ const Rows = (props) => {
         let rooms = []
         rooms[0] = await props.row.id
         localStorage.setItem('mainRoomId', props.row.id)
-        openInNewTab(`http://localhost:3000/mainRoom/${props.groupId}/${props.row.id}`)
+        navigate(`/mainRoom/${props.groupId}/${props.row.id}`)
+        // openInNewTab(`http://140.115.126.21:3000/mainRoom/${props.groupId}/${props.row.id}`)
         localStorage.setItem('discussType', 'all');
         localStorage.setItem('announcement', JSON.stringify(rooms));
     }

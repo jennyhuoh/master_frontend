@@ -9,6 +9,7 @@ import { useMutation } from 'react-query';
 import { styled, useTheme } from "@mui/material/styles";
 import { v4 as uuidv4 } from 'uuid';
 import { Network } from "vis-network";
+import { DataSet } from "vis-data/peer/esm/vis-data"
 import freeice from 'freeice';
 import AvatarGroup from 'react-avatar-group';
 import randomColor from 'randomcolor';
@@ -105,7 +106,11 @@ export default function MainRoomContent(pageMainRoomProps) {
 
     useEffect(() => {
         if(nodes !== null) {
-            const network = visJsRef.current && new Network(visJsRef.current, {nodes, edges}, {
+            const data = {
+                nodes: new DataSet(nodes),
+                edges: new DataSet(edges)
+            }
+            const network = visJsRef.current && new Network(visJsRef.current, data, {
                 autoResize: false,
                 edges: {
                     color: "#411811"
@@ -116,17 +121,6 @@ export default function MainRoomContent(pageMainRoomProps) {
                         size: 16
                     }
                 },
-                physics: {
-                    enabled: false,
-                    solver: 'repulsion',
-                    repulsion: {
-                        nodeDistance: 400
-                    },
-                    barnesHut: {
-                        springConstant: 0,
-                        avoidOverlap: 0.2
-                    }
-                }
             })
         }
     }, [visJsRef, nodes, edges])
@@ -202,12 +196,12 @@ export default function MainRoomContent(pageMainRoomProps) {
                 }
             })
             wsRef.current.on('closeMicGetNewData', () => {
-                if(openCondition) {
-                    mutateGetDiscuss({
-                        stageId: localStorage.getItem('stageId'),
-                        teamId: selectedWatchTeam
-                    }) 
-                }
+                console.log('get this socket')
+                console.log('selected watch team', selectedWatchTeam)
+                mutateGetDiscuss({
+                    stageId: localStorage.getItem('stageId'),
+                    teamId: localStorage.getItem('selectedWatchTeam')
+                }) 
             })
         }
     
@@ -364,8 +358,10 @@ export default function MainRoomContent(pageMainRoomProps) {
                 }
                 setAudioChunks(localChunks);
             } else if(isMute === false) {
-                let mainRoomId = localStorage.getItem('mainRoomId')
-                wsRef.current.emit('closeMicGetNewData', {mainRoomId})
+                // let mainRoomId = localStorage.getItem('mainRoomId')
+                wsRef.current.emit('closeMicGetNewData', {
+                    mainRoomId: localStorage.getItem('mainRoomId')
+                })
                 setClickedTarget(false)
                 setRecordingStatus("inactive")
                 mediaRecorder.current.stop()
@@ -421,6 +417,7 @@ export default function MainRoomContent(pageMainRoomProps) {
             }))
         }
         if(checkingStage !== undefined) {
+            localStorage.setItem('stageId', checkingStage.id)
             if(checkingStage.grouping === true && checkingStage.stageChecked === true) {
                 let teamDetail = stageInfo[checkingStage.stageOrder-1].teams
                 setAnnouncementRooms(teamDetail)
@@ -428,22 +425,21 @@ export default function MainRoomContent(pageMainRoomProps) {
                     console.log('announcement rooms', rooms);
                     localStorage.setItem('announcement', JSON.stringify(rooms));
                 })
-                wsRef.current.emit('openGroupDiscuss', {roomId: roomID, teamDetail})
+                wsRef.current.emit('openGroupDiscuss', {roomId: roomID, teamDetail: teamDetail})
                 // 這裡打開檢視討論狀況按鈕權限
                 console.log('team detail', teamDetail)
                 setWatchConditionTeams(teamDetail)
                 setSelectedWatchTeam(teamDetail[0].id)
+                localStorage.setItem('selectedWatchTeam', teamDetail[0].id)
                 setConditionClickable(true);
                 
-                // console.log('checkingStage', checkingStage);
+                console.log('checkingStage', checkingStage);
                 // localStorage.setItem('stageId', checkingStage.id)
             }
             console.log('stageInfo', stageInfo)
         }
     }, [checkingStage])
     useEffect(() => {
-        setNodes(null)
-        setEdges(null)
         if(watchConditionTeams) {
             setSelectedWatchTeam(watchConditionTeams[0].id)
         }
@@ -564,49 +560,66 @@ export default function MainRoomContent(pageMainRoomProps) {
         })
     }
     useEffect(() => {
-        if(openCondition) {
+        console.log('selected watch team', selectedWatchTeam)
+        if(selectedWatchTeam !== undefined) {
             mutateGetDiscuss({
-                stageId: localStorage.getItem('stageId'),
+                stageId: checkingStage.id,
                 teamId: selectedWatchTeam
             })
         }
-    }, [openCondition, selectedWatchTeam])
+    }, [selectedWatchTeam, openCondition])
 
     useEffect(() => {
         if(discussResults !== null) {
+            
             console.log('watch condition teams', watchConditionTeams)
             arrangeNode();
+            
+            console.log('edges', edges)
+        }
+        async function arrangeNode() {
+            let nodeArr = []
+            let edgeArr = []
+            const filterTeam = await watchConditionTeams.filter((team) => team.id === selectedWatchTeam)
+            console.log('team', filterTeam)
+            await Promise.all(filterTeam[0].teamMembers.map((member) => {
+                const data = {
+                    id: member.id,
+                    label: member.label
+                }
+                
+                nodeArr.push(data)
+            })).then(async () => {
+                console.log('discussResults', discussResults)
+                await Promise.all(discussResults?.map((item) => {
+                    let index = -1
+                    if(edgeArr.length !== 0) {
+                        index = edgeArr.findIndex((edge) => edge.from === item.info.recordAuthorId && edge.to === item.info.recordTargetId)
+                    }
+                    if(index === -1) {
+                        const data = {
+                            from: item.info.recordAuthorId,
+                            to: item.info.recordTargetId,
+                            arrows:"to",
+                            label:'1'
+                        }
+                        edgeArr.push(data)
+                    } else {
+                        let newEdge = edgeArr
+                        let newLabel = parseInt(newEdge[index].label)
+                        console.log('newLabel', newLabel)
+                        newEdge[index].label = (newLabel+1).toString()
+                        edgeArr = newEdge
+                    }
+                }))
+            }).then(() => {
+                setNodes(nodeArr)
+                setEdges(edgeArr)
+            })
         }
       }, [discussResults])
 
-    async function arrangeNode() {
-        let nodeArr = []
-        let edgeArr = []
-        // const filterStage = stageInfo.length === 1 ? stageInfo[0] : stageInfo.filter((stage) => stage.id === selectValue)
-        const filterTeam = await watchConditionTeams.filter((team) => team.id === selectedWatchTeam)
-        // console.log('stage', filterStage)
-        console.log('team', filterTeam)
-        await Promise.all(filterTeam[0].teamMembers.map((member) => {
-            const data = {
-                id: member.id,
-                label: member.label
-            }
-            nodeArr.push(data)
-        })).then(() => {
-            setNodes(nodeArr)
-        }).then(async () => {
-            await Promise.all(discussResults?.map((item) => {
-                const data = {
-                    from: item.info.recordAuthorId,
-                    to: item.info.recordTargetId,
-                    arrows:'to'
-                }
-                edgeArr.push(data)
-            }))
-        }).then(() => {
-            setEdges(edgeArr)
-        })
-    }
+
 
     if(true){
         return(

@@ -6,6 +6,7 @@ import { ArrowBackIosNew } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { Network } from "vis-network";
 import { XYPlot, VerticalGridLines, HorizontalGridLines, XAxis, YAxis, VerticalBarSeries, LabelSeries} from 'react-vis';
+import { DataSet } from "vis-data/peer/esm/vis-data"
 import AvatarGroup from "react-avatar-group";
 import randomColor from 'randomcolor';
 
@@ -37,7 +38,12 @@ export default function DiscussResultDetail(props) {
     })
     useEffect(() => {
         if(nodes !== null) {
-            const network = visJsRef.current && new Network(visJsRef.current, {nodes, edges}, {
+            console.log('edges', edges)
+            const data = {
+                nodes: new DataSet(nodes),
+                edges: new DataSet(edges)
+            }
+            const network = visJsRef.current && new Network(visJsRef.current, data, {
                 autoResize: true,
                 edges: {
                     color: "#411811"
@@ -83,6 +89,7 @@ export default function DiscussResultDetail(props) {
                 stageId: selectValue,
                 teamId: selectedTeam
             })
+            console.log('selected team', selectedTeam)
         }
     }, [selectedTeam])
     useEffect(() => {
@@ -107,13 +114,27 @@ export default function DiscussResultDetail(props) {
             })).then(() => {
                 setNodes(nodeArr)
             }).then(async () => {
+                console.log('audioBuffer', audioBuffer)
                 await Promise.all(audioBuffer?.map((item) => {
-                    const data = {
-                        from: item.info.recordAuthorId,
-                        to: item.info.recordTargetId,
-                        arrows:'to'
+                    let index = -1
+                    if(edgeArr.length !== 0) {
+                        index = edgeArr.findIndex((edge) => edge.from === item.info.recordAuthorId && edge.to === item.info.recordTargetId)
                     }
-                    edgeArr.push(data)
+                    if(index === -1) {
+                        const data = {
+                            from: item.info.recordAuthorId,
+                            to: item.info.recordTargetId,
+                            arrows:"to",
+                            label:'1'
+                        }
+                        edgeArr.push(data)
+                    } else {
+                        let newEdge = edgeArr
+                        let newLabel = parseInt(newEdge[index].label)
+                        console.log('newLabel', newLabel)
+                        newEdge[index].label = (newLabel+1).toString()
+                        edgeArr = newEdge
+                    }
                     if(barArr.length !== 0) {
                         const index = barArr.findIndex((barItem) => barItem.x === item.info.recordAuthor)
                         if(index !== -1) {
@@ -175,7 +196,7 @@ export default function DiscussResultDetail(props) {
                         <XYPlot
                             animation
                             xType="ordinal"
-                            width={630}
+                            width={530}
                             height={420}
                             xDistance={50}
                         >

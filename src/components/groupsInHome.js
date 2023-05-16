@@ -1,5 +1,5 @@
 import { Box, Card, CardContent, Button, Typography, Grid, IconButton, Badge, CircularProgress, Stack } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { MoreHoriz, AddCircleOutline, Event, People, Diversity3, AccessTime } from "@mui/icons-material";
 import { getAllGroups, getUserActivities } from "../features/api/index.js";
 import { useQuery } from "react-query";
@@ -47,6 +47,7 @@ const Groups = (props) => {
     );
 }
 const RecentCard = (props) => {
+    let navigate = useNavigate();
     const openInNewTab = url => {
         window.open(url, '_blank', 'noopener,noreferrer');
     };
@@ -54,7 +55,8 @@ const RecentCard = (props) => {
         let rooms = []
         rooms[0] = await props.id
         localStorage.setItem('mainRoomId', props.id)
-        openInNewTab(`http://localhost:3000/mainRoom/${props.meetingId}/${props.id}`)
+        navigate(`/mainRoom/${props.meetingId}/${props.id}`)
+        // openInNewTab(`http://140.115.126.21:3000/mainRoom/${props.meetingId}/${props.id}`)
         localStorage.setItem('discussType', 'all');
         localStorage.setItem('announcement', JSON.stringify(rooms));
     }
