@@ -1,10 +1,11 @@
-import { Box, Select, MenuItem, Paper, MenuList, Typography, Divider, IconButton } from "@mui/material";
+import { Box, Select, MenuItem, Paper, MenuList, Typography, Divider, IconButton, ToggleButtonGroup, ToggleButton  } from "@mui/material";
 import { useQuery, useMutation } from "react-query";
 import { getAnActivity, getRecordings } from "../features/api";
 import { useState, useEffect, useRef } from "react";
 import { ArrowBackIosNew } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { Network } from "vis-network";
+import { XYPlot, VerticalGridLines, HorizontalGridLines, XAxis, YAxis, VerticalBarSeries, LabelSeries} from 'react-vis';
 import AvatarGroup from "react-avatar-group";
 import randomColor from 'randomcolor';
 
@@ -13,6 +14,7 @@ export default function DiscussResultDetail(props) {
     let color = randomColor()
     let navigate = useNavigate();
     const visJsRef = useRef(null);
+    const BarSeries = VerticalBarSeries;
     const [activityInfo, setActivityInfo] = useState(null);
     const [stageInfo, setStageInfo] = useState(null);
     const [selectValue, setSelectValue] = useState();
@@ -22,13 +24,14 @@ export default function DiscussResultDetail(props) {
     const [borderColor, setBorderColor] = useState(color);
     const [nodes, setNodes] = useState(null);
     const [edges, setEdges] = useState(null);
+    const [barData, setBarData] = useState(null);
+    const [toggleValue, setToggleValue] = useState('relation');
     
     const {data} = useQuery(['activity', activityId], () => getAnActivity(activityId), {
         onSuccess: () => setActivityInfo(data)
     })
     const {mutate} = useMutation(getRecordings, {
         onSuccess: (data) => {
-            // console.log('selected team data', data)
             setAudioBuffer(data)
         }
     })
@@ -41,7 +44,7 @@ export default function DiscussResultDetail(props) {
                 }
             })
         }
-    }, [visJsRef, nodes, edges])
+    }, [visJsRef, nodes, edges, toggleValue])
 
     useEffect(() => {
         setActivityInfo(data)
@@ -67,7 +70,6 @@ export default function DiscussResultDetail(props) {
             } else {
                 setTeams(stageInfo[0].teams)
             }
-            // console.log('teams', teams)
         }
     }, [selectValue])
     useEffect(() => {
@@ -76,9 +78,7 @@ export default function DiscussResultDetail(props) {
         }
     }, [teams])
     useEffect(() => {
-        console.log('here')
         if(selectedTeam) {
-            console.log('here2')
             mutate({
                 stageId: selectValue,
                 teamId: selectedTeam
@@ -87,16 +87,17 @@ export default function DiscussResultDetail(props) {
     }, [selectedTeam])
     useEffect(() => {
         if(audioBuffer !== null) {
-          console.log('buffer',  audioBuffer)
+        //   console.log('buffer',  audioBuffer)
           arrangeNode();
         }
         let nodeArr = []
         let edgeArr = []
+        let barArr = []
         async function arrangeNode() {
             const filterStage = stageInfo.length === 1 ? stageInfo[0] : stageInfo.filter((stage) => stage.id === selectValue)
             const filterTeam = await filterStage.teams.filter((team) => team.id === selectedTeam)
-            console.log('stage', filterStage)
-            console.log('team', filterTeam)
+            // console.log('stage', filterStage)
+            // console.log('team', filterTeam)
             await Promise.all(filterTeam[0].teamMembers.map((member) => {
                 const data = {
                     id: member.id,
@@ -113,16 +114,38 @@ export default function DiscussResultDetail(props) {
                         arrows:'to'
                     }
                     edgeArr.push(data)
+                    if(barArr.length !== 0) {
+                        const index = barArr.findIndex((barItem) => barItem.x === item.info.recordAuthor)
+                        if(index !== -1) {
+                            barArr[index].y = barArr[index].y + 1
+                        } else {
+                            const data3 = {
+                                x: item.info.recordAuthor,
+                                y: 1
+                            }
+                            barArr.push(data3); 
+                        }
+                    } else {
+                        const data2 = {
+                            x: item.info.recordAuthor,
+                            y: 1
+                        }
+                        barArr.push(data2);
+                    }
                 }))
             }).then(() => {
                 setEdges(edgeArr)
+                setBarData(barArr)
             })
-            
         }
       }, [audioBuffer])
     const onClickTeam = (id) => {
         // console.log('team id', id)
         setSelectedTeam(id)
+    }
+    const onChangeSelected = (event, newEvent) => {
+        // console.log('newEvent', newEvent)
+        setToggleValue(newEvent)
     }
     // console.log('stages', stageInfo)
     // console.log('teams', teams)
@@ -138,8 +161,32 @@ export default function DiscussResultDetail(props) {
                 <Box style={{width:'70vw', display:'flex', height:'70vh', marginTop:'4.5vh'}}>
                     {/* vis.js area */}
                     <Paper style={{width:'50vw'}}>
-                        <Typography style={{fontWeight:'bold', margin:'13px 20px', letterSpacing:'0.6px'}}>討論關聯圖</Typography>
+                        <ToggleButtonGroup
+                            value={toggleValue}
+                            onChange={onChangeSelected}
+                            exclusive
+                        >
+                            <ToggleButton style={{fontWeight:'bold', margin:'13px 20px', letterSpacing:'0.6px'}} value={'relation'}>討論關聯圖</ToggleButton>
+                            <ToggleButton style={{fontWeight:'bold', margin:'13px 20px', letterSpacing:'0.6px'}} value={'bar'}>發言次數表</ToggleButton>
+                        </ToggleButtonGroup>
+                        {toggleValue === 'relation' ? 
                         <div ref={visJsRef} style={{height:'500px', width:'500px'}}/>
+                        : 
+                        <XYPlot
+                            animation
+                            xType="ordinal"
+                            width={500}
+                            height={420}
+                            xDistance={100}
+                            style={{backgroundColor:'pink'}}
+                        >
+                            <VerticalGridLines />
+                            <HorizontalGridLines />
+                            <XAxis />
+                            <YAxis />
+                            <BarSeries data={barData} />
+                        </XYPlot>
+                        }
                     </Paper>
                     {/* recording area */}
                     <Paper style={{padding:'15px 8px', display:'flex', flexDirection:'column', alignItems:'center', overflowY:'scroll'}}>
