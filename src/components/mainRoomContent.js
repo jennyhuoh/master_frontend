@@ -201,6 +201,14 @@ export default function MainRoomContent(pageMainRoomProps) {
                     }
                 }
             })
+            wsRef.current.on('closeMicGetNewData', () => {
+                if(openCondition) {
+                    mutateGetDiscuss({
+                        stageId: localStorage.getItem('stageId'),
+                        teamId: selectedWatchTeam
+                    }) 
+                }
+            })
         }
     
         async function captureMedia() {
@@ -356,6 +364,8 @@ export default function MainRoomContent(pageMainRoomProps) {
                 }
                 setAudioChunks(localChunks);
             } else if(isMute === false) {
+                let mainRoomId = localStorage.getItem('mainRoomId')
+                wsRef.current.emit('closeMicGetNewData', {mainRoomId})
                 setClickedTarget(false)
                 setRecordingStatus("inactive")
                 mediaRecorder.current.stop()
@@ -555,57 +565,48 @@ export default function MainRoomContent(pageMainRoomProps) {
     }
     useEffect(() => {
         if(openCondition) {
-            // mutateGetDiscuss({
-            //     stageId: localStorage.getItem('stageId'),
-            //     teamId: selectedWatchTeam
-            // })
-            const interval = setInterval(() => {
-                mutateGetDiscuss({
-                    stageId: localStorage.getItem('stageId'),
-                    teamId: selectedWatchTeam
-                })
-                if(!openCondition) {
-                    clearInterval(interval);
-                }
-            }, 5000)
+            mutateGetDiscuss({
+                stageId: localStorage.getItem('stageId'),
+                teamId: selectedWatchTeam
+            })
         }
-    }, [openCondition])
+    }, [openCondition, selectedWatchTeam])
 
     useEffect(() => {
         if(discussResults !== null) {
             console.log('watch condition teams', watchConditionTeams)
-          arrangeNode();
-        }
-        let nodeArr = []
-        let edgeArr = []
-        async function arrangeNode() {
-            // const filterStage = stageInfo.length === 1 ? stageInfo[0] : stageInfo.filter((stage) => stage.id === selectValue)
-            const filterTeam = await watchConditionTeams.filter((team) => team.id === selectedWatchTeam)
-            // console.log('stage', filterStage)
-            console.log('team', filterTeam)
-            await Promise.all(filterTeam[0].teamMembers.map((member) => {
-                const data = {
-                    id: member.id,
-                    label: member.label
-                }
-                nodeArr.push(data)
-            })).then(() => {
-                setNodes(nodeArr)
-            }).then(async () => {
-                await Promise.all(discussResults?.map((item) => {
-                    const data = {
-                        from: item.info.recordAuthorId,
-                        to: item.info.recordTargetId,
-                        arrows:'to'
-                    }
-                    edgeArr.push(data)
-                }))
-            }).then(() => {
-                setEdges(edgeArr)
-            })
-            
+            arrangeNode();
         }
       }, [discussResults])
+
+    async function arrangeNode() {
+        let nodeArr = []
+        let edgeArr = []
+        // const filterStage = stageInfo.length === 1 ? stageInfo[0] : stageInfo.filter((stage) => stage.id === selectValue)
+        const filterTeam = await watchConditionTeams.filter((team) => team.id === selectedWatchTeam)
+        // console.log('stage', filterStage)
+        console.log('team', filterTeam)
+        await Promise.all(filterTeam[0].teamMembers.map((member) => {
+            const data = {
+                id: member.id,
+                label: member.label
+            }
+            nodeArr.push(data)
+        })).then(() => {
+            setNodes(nodeArr)
+        }).then(async () => {
+            await Promise.all(discussResults?.map((item) => {
+                const data = {
+                    from: item.info.recordAuthorId,
+                    to: item.info.recordTargetId,
+                    arrows:'to'
+                }
+                edgeArr.push(data)
+            }))
+        }).then(() => {
+            setEdges(edgeArr)
+        })
+    }
 
     if(true){
         return(

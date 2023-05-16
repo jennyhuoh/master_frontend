@@ -166,25 +166,24 @@ export default function DiscussResultDetail(props) {
                             onChange={onChangeSelected}
                             exclusive
                         >
-                            <ToggleButton style={{fontWeight:'bold', margin:'13px 20px', letterSpacing:'0.6px'}} value={'relation'}>討論關聯圖</ToggleButton>
-                            <ToggleButton style={{fontWeight:'bold', margin:'13px 20px', letterSpacing:'0.6px'}} value={'bar'}>發言次數表</ToggleButton>
+                            <ToggleButton style={{fontWeight:'bold', margin:'13px 0 13px 20px', letterSpacing:'0.6px'}} value={'relation'}>討論關聯圖</ToggleButton>
+                            <ToggleButton style={{fontWeight:'bold', margin:'13px 0', letterSpacing:'0.6px'}} value={'bar'}>發言次數表</ToggleButton>
                         </ToggleButtonGroup>
                         {toggleValue === 'relation' ? 
-                        <div ref={visJsRef} style={{height:'500px', width:'500px'}}/>
+                        <div ref={visJsRef} style={{height:'450px', width:'640px'}}/>
                         : 
                         <XYPlot
                             animation
                             xType="ordinal"
-                            width={500}
+                            width={630}
                             height={420}
-                            xDistance={100}
-                            style={{backgroundColor:'pink'}}
+                            xDistance={50}
                         >
                             <VerticalGridLines />
                             <HorizontalGridLines />
                             <XAxis />
                             <YAxis />
-                            <BarSeries data={barData} />
+                            <BarSeries barWidth={0.3} data={barData} />
                         </XYPlot>
                         }
                     </Paper>
