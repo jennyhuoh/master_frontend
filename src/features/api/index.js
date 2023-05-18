@@ -2,31 +2,31 @@ import axios from 'axios';
 
 const instance = axios.create({
     // baseURL:'http://localhost:3001/',
-    // baseURL: 'http://140.115.126.21:3001',
-    baseURL: 'https://ba43-140-115-126-172.ngrok-free.app',
+    baseURL: 'http://140.115.126.21:3001',
+    // baseURL: 'https://ba43-140-115-126-172.ngrok-free.app',
     headers: {
         'X-Powered-By':'Express',
         'Content-Type':'application/json',
         'Access-Control-Allow-Origin':'*',
         'Access-Control-Allow-Methods':'POST, GET, PUT, DELETE',
         'Access-Control-Max-Age': 600,
-        "ngrok-skip-browser-warning": true,
-        Origin: window.location.origin
+        // "ngrok-skip-browser-warning": true,
+        // Origin: window.location.origin
     },
     timeout:20000,
 })
 const recordInstance = axios.create({
     // baseURL: 'http://localhost:3001/',
-    // baseURL: 'http://140.115.126.21:3001',
-    baseURL: 'https://ba43-140-115-126-172.ngrok-free.app',
+    baseURL: 'http://140.115.126.21:3001',
+    // baseURL: 'https://ba43-140-115-126-172.ngrok-free.app',
     headers: {
         'X-Powered-By': 'Express',
         'Content-Type': 'multipart/form-data',
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'POST, GET, PUT, DELETE',
         'Access-Control-Max-Age': 600,
-        "ngrok-skip-browser-warning": true,
-        Origin: window.location.origin
+        // "ngrok-skip-browser-warning": true,
+        // Origin: window.location.origin
     },
     timeout: 20000,
 })
