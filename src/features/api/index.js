@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 const instance = axios.create({
-    baseURL:'http://localhost:3001/',
-    // baseURL: 'http://140.115.126.21:3001',
+    // baseURL:'http://localhost:3001/',
+    baseURL: 'http://140.115.126.21:3001',
     headers: {
         'X-Powered-By':'Express',
         'Content-Type':'application/json',
@@ -11,8 +11,8 @@ const instance = axios.create({
     timeout:20000,
 })
 const recordInstance = axios.create({
-    baseURL: 'http://localhost:3001/',
-    // baseURL: 'http://140.115.126.21:3001',
+    // baseURL: 'http://localhost:3001/',
+    baseURL: 'http://140.115.126.21:3001',
     headers: {
         'X-Powered-By': 'Express',
         'Content-Type': 'multipart/form-data',
