@@ -145,7 +145,7 @@ export default function MainRoomContent(pageMainRoomProps) {
     useEffect(() => {
       
         const initChat = async () => {
-            wsRef.current = io('http://140.115.126.21:3001', {}) 
+            wsRef.current = io('https://ocdbackend-jennyhuoh.koyeb.app/', {}) 
             await captureMedia();
             addNewPeer({...user, muted:true}, () => {
                 const localElement = audioElements.current[user.id];
