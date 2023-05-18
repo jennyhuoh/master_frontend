@@ -145,7 +145,7 @@ export default function MainRoomContent(pageMainRoomProps) {
     useEffect(() => {
       
         const initChat = async () => {
-            wsRef.current = io('https://ba43-140-115-126-172.ngrok-free.app') 
+            wsRef.current = io('https://ba43-140-115-126-172.ngrok-free.app', {}) 
             await captureMedia();
             addNewPeer({...user, muted:true}, () => {
                 const localElement = audioElements.current[user.id];
