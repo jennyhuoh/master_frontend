@@ -131,7 +131,7 @@ export default function DiscussResultDetail(props) {
                     } else {
                         let newEdge = edgeArr
                         let newLabel = parseInt(newEdge[index].label)
-                        console.log('newLabel', newLabel)
+                        // console.log('newLabel', newLabel)
                         newEdge[index].label = (newLabel+1).toString()
                         edgeArr = newEdge
                     }

@@ -2,7 +2,7 @@ import websocket, {io} from 'socket.io-client';
 import React, { useRef, useEffect, useState, useCallback, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Box, Button, IconButton, Fab, Tooltip, Backdrop, CircularProgress, Typography, AppBar, Drawer, Divider, TextField, Dialog, DialogTitle, DialogContent, DialogActions, ToggleButtonGroup, ToggleButton } from '@mui/material';
-import { Mic, MicOff, ExitToApp, Groups2, CastForEducation, Textsms, ChevronLeft, ChevronRight, Send, Campaign, CloseRounded, AutoGraph } from '@mui/icons-material';
+import { Mic, MicOff, ExitToApp, Groups2, CastForEducation, Textsms, ChevronLeft, ChevronRight, Send, Campaign, CloseRounded, AutoGraph, WindowSharp } from '@mui/icons-material';
 import { useStateWithCallback } from '../hooks/useStateWithCallback';
 import { createRecord, getRecordings } from '../features/api';
 import { useMutation } from 'react-query';
@@ -87,15 +87,16 @@ export default function MainRoomContent(pageMainRoomProps) {
     const [discussResults, setDiscussResults] = useState(null);
     const [nodes, setNodes] = useState(null);
     const [edges, setEdges] = useState(null);
+    const [localPeers, setLocalPeers] = useState([])
     const visJsRef = useRef(null);
     const messagesEndRef = useRef(null);
     const {mutate} = useMutation(createRecord)
-    const {mutate: mutateGetDiscuss} = useMutation(getRecordings, {
-        onSuccess: (data) => {
-            console.log('selected team data', data)
-            setDiscussResults(data)
-        }
-    })
+    // const {mutate: mutateGetDiscuss} = useMutation(getRecordings, {
+    //     onSuccess: (data) => {
+    //         console.log('selected team data', data)
+    //         setDiscussResults(data)
+    //     }
+    // })
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({behavior: 'smooth'});
     }
@@ -126,12 +127,17 @@ export default function MainRoomContent(pageMainRoomProps) {
     }, [visJsRef, nodes, edges])
 
     const addNewPeer = useCallback((newPeer, cb) => {
-        const lookingFor = peers.find((peer) => peer.id === newPeer.iD);
+        console.log('addNewPeers newPeer', newPeer)
+        console.log('cb', cb);
+        console.log('peers', peers)
+        // const lookingFor = peers.findIndex((peer) => peer.id === newPeer.id);
+        const lookingFor = localPeers.findIndex((peer) => peer.id === newPeer.id);
         console.log('lookingFor', lookingFor)
-        if(lookingFor === undefined) {
+        if(lookingFor === -1) {
             setPeers((existingPeers) => [...existingPeers, newPeer], cb);
         }
     })
+
     const provideRef = (instance, userId) => {
         audioElements.current[userId] = instance;
     }
@@ -161,7 +167,7 @@ export default function MainRoomContent(pageMainRoomProps) {
                 handleSetMute(false, userId)
             })
             // socket emit JOIN socket io
-            wsRef.current.emit('joinRoom', {roomID, user})
+            wsRef.current.emit('joinRoom', {roomID: roomID, user})
             // Listen for grouping team id
             wsRef.current.on('openGroupDiscuss', ({team, stageId}) => {
                 console.log('teamRoom', team)
@@ -198,10 +204,10 @@ export default function MainRoomContent(pageMainRoomProps) {
             wsRef.current.on('closeMicGetNewData', () => {
                 console.log('get this socket')
                 console.log('selected watch team', selectedWatchTeam)
-                mutateGetDiscuss({
-                    stageId: localStorage.getItem('stageId'),
-                    teamId: localStorage.getItem('selectedWatchTeam')
-                }) 
+                // mutateGetDiscuss({
+                //     stageId: localStorage.getItem('stageId'),
+                //     teamId: localStorage.getItem('selectedWatchTeam')
+                // }) 
             })
         }
     
@@ -212,8 +218,11 @@ export default function MainRoomContent(pageMainRoomProps) {
         }
         async function handleNewPeer({peerId, createOffer, user: remoteUser}){
              console.log('here is addPeer')
+             console.log('here is connections', connections.current)
+             console.log('peerID', peerId)
             // id already connected then give warning
             if(peerId in connections.current) {
+                console.log('in the warning')
                 return console.warn(`You are already connected with ${peerId} (${user.name})`)
             }
             // Store it to connections
@@ -291,9 +300,11 @@ export default function MainRoomContent(pageMainRoomProps) {
             );
             if(peerIdx > -1) {
                 allConnectedPeers[peerIdx].muted = mute;
+                // peersRef.current = allConnectedPeers;
                 setPeers(allConnectedPeers)
             }
-            console.log('peersss', peers)
+            // console.log('peerRef', peersRef.current)
+            // console.log('peersss', peers)
         }
        
         initChat();
@@ -301,7 +312,7 @@ export default function MainRoomContent(pageMainRoomProps) {
             
             // Leaving the room
             localMediaStream.current.getTracks().forEach(track => track.stop())
-            wsRef.current.emit('leave', {roomID})
+            wsRef.current.emit('leave', {roomID: roomID})
             for (let peerId in connections.current) {
                 connections.current[peerId].close();
                 delete connections.current[peerId];
@@ -312,7 +323,7 @@ export default function MainRoomContent(pageMainRoomProps) {
             wsRef.current.off('iceCandidate');
             wsRef.current.off('sessionDescription')
         }
-    }, [roomID, backDropOpen]);
+    }, [roomID]);
 
     useEffect(() => {
         handleMute(isMute);
@@ -406,7 +417,15 @@ export default function MainRoomContent(pageMainRoomProps) {
                 setWhoIsTalking(members);
             }
         }
+        console.log('peers', peers)
+        setLocalPeers(peers)
     }, [peers]);
+    // useEffect(() => {
+    //     console.log('peersRef', peersRef.current)
+    //     setPeers(JSON.parse(
+    //         JSON.stringify(peersRef.current)
+    //     ))
+    // }, [peersRef.current])
 
     useEffect(() => {
        
@@ -559,15 +578,15 @@ export default function MainRoomContent(pageMainRoomProps) {
             name: name
         })
     }
-    useEffect(() => {
-        console.log('selected watch team', selectedWatchTeam)
-        if(selectedWatchTeam !== undefined) {
-            mutateGetDiscuss({
-                stageId: checkingStage.id,
-                teamId: selectedWatchTeam
-            })
-        }
-    }, [selectedWatchTeam, openCondition])
+    // useEffect(() => {
+    //     console.log('selected watch team', selectedWatchTeam)
+    //     if(selectedWatchTeam !== undefined) {
+    //         mutateGetDiscuss({
+    //             stageId: checkingStage.id,
+    //             teamId: selectedWatchTeam
+    //         })
+    //     }
+    // }, [selectedWatchTeam, openCondition])
 
     useEffect(() => {
         if(discussResults !== null) {
@@ -607,7 +626,7 @@ export default function MainRoomContent(pageMainRoomProps) {
                     } else {
                         let newEdge = edgeArr
                         let newLabel = parseInt(newEdge[index].label)
-                        console.log('newLabel', newLabel)
+                        // console.log('newLabel', newLabel)
                         newEdge[index].label = (newLabel+1).toString()
                         edgeArr = newEdge
                     }
