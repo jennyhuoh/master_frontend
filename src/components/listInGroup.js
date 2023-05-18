@@ -140,14 +140,14 @@ export default function ListInGroup(appProps) {
     
     useEffect(() => {
         let newArr = [];
+        ParseNumIdToString(JSON.parse(localStorage.getItem('usersInGroup')));
         async function ParseNumIdToString(groupItem) {
-            await Promise.all(groupItem?.map(async (item) => {
+            await Promise.all(groupItem.map(async (item) => {
                 const data = await item
                 data.id = await data.id.toString()
                 newArr.push(data);
             }))
         }
-        ParseNumIdToString(JSON.parse(localStorage.getItem('usersInGroup')));
         setGroupItems(newArr)
     }, [])
 

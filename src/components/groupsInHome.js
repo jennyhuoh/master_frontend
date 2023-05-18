@@ -11,6 +11,7 @@ const Groups = (props) => {
     const a = props.members.map((member) => {
         memberArr.push(member.userName);
     })
+    let newEndTime = props.endTime.substr(0,10)
     
     return(
         <Card sx={{ width: 200, height: 130, borderRadius:'5px',padding:'10px' }}>
@@ -40,7 +41,7 @@ const Groups = (props) => {
                     <Typography style={{fontSize:'12px', fontWeight:'bold'}}>
                         截止日期:  
                     </Typography>
-                    <Typography style={{fontSize:'12px', letterSpacing:'1px'}} sx={{ml:'5px'}}> {props.endTime}</Typography>
+                    <Typography style={{fontSize:'12px', letterSpacing:'1px'}} sx={{ml:'5px'}}> {newEndTime}</Typography>
                 </Box>
             </CardContent>
         </Card>
