@@ -8,8 +8,9 @@ const instance = axios.create({
         'X-Powered-By':'Express',
         'Content-Type':'application/json',
         'Access-Control-Allow-Origin':'*',
-        'Access-Control-Allow-Methods':'POST, GET, PUT, DELETE',
-        'Access-Control-Max-Age': '600'
+        'Access-Control-Allow-Methods':POST, GET, PUT, DELETE,
+        'Access-Control-Max-Age': 600,
+        "ngrok-skip-browser-warning": true
     },
     timeout:20000,
 })
@@ -21,8 +22,9 @@ const recordInstance = axios.create({
         'X-Powered-By': 'Express',
         'Content-Type': 'multipart/form-data',
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods':'POST, GET, PUT, DELETE',
-        'Access-Control-Max-Age': '600'
+        'Access-Control-Allow-Methods': POST, GET, PUT, DELETE,
+        'Access-Control-Max-Age': 600,
+        "ngrok-skip-browser-warning": true
     },
     timeout: 20000,
 })
