@@ -9,7 +9,7 @@ const instance = axios.create({
         'Content-Type':'application/json',
         'Access-Control-Allow-Origin':'*',
         'Access-Control-Allow-Methods':'POST, GET, PUT, DELETE',
-        'Access-Control-Max-Age': 600,
+        'Access-Control-Max-Age': 26400,
         // "ngrok-skip-browser-warning": true,
         // Origin: window.location.origin
     },
@@ -24,7 +24,7 @@ const recordInstance = axios.create({
         'Content-Type': 'multipart/form-data',
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'POST, GET, PUT, DELETE',
-        'Access-Control-Max-Age': 600,
+        'Access-Control-Max-Age': 26400,
         // "ngrok-skip-browser-warning": true,
         // Origin: window.location.origin
     },
