@@ -145,12 +145,13 @@ export default function MainRoomContent(pageMainRoomProps) {
     useEffect(() => {
       
         const initChat = async () => {
-            wsRef.current = socketInit();            await captureMedia();
+            wsRef.current = socketInit();            
+            await captureMedia();
             addNewPeer({...user, muted:true}, () => {
                 const localElement = audioElements.current[user.id];
                 if(localElement) {
                     // localElement.volume = 1;
-                    localElement.muted = true
+                    // localElement.muted = true
                     localElement.srcObject = localMediaStream.current;
                 }
             })
@@ -481,19 +482,21 @@ export default function MainRoomContent(pageMainRoomProps) {
     }, [stableAnnounceContent])
 
     const onClickGroupDiscussion = () => {
-        let room = roomID;
+        wsRef.current.emit('leave', {roomID: roomID})
+        // let room = roomID;
         setBackDropOpen(true);
         localStorage.setItem('discussType', 'group');
         setTimeout(() => {
             setBackDropOpen(false)
         }, 1000)
         navigate(`/mainRoom/${groupId}/${teamRoom}`)
-        wsRef.current.emit('leave', {room})
+        // wsRef.current.emit('leave', {room})
         window.location.reload(true);
     }
 
     const onClickBackToMain = () => {
-        let room = roomID;
+        wsRef.current.emit('leave', {roomID: roomID})
+        // let room = roomID;
         setBackDropOpen(true);
         localStorage.setItem('discussType', 'all');
         setTimeout(() => {
@@ -501,7 +504,7 @@ export default function MainRoomContent(pageMainRoomProps) {
         }, 1000)
         setTeamRoom(null);
         navigate(`/mainRoom/${groupId}/${localStorage.getItem('mainRoomId')}`)
-        wsRef.current.emit('leave', {room})
+        // wsRef.current.emit('leave', {room})
         window.location.reload(true);
     }
 
