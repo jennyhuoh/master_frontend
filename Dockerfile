@@ -15,5 +15,5 @@ RUN apt update -y \
     && apt-get clean
 EXPOSE 80
 STOPSIGNAL SIGTERM
-COPY --from=build /master_frontend/build /var/www/html
+COPY --from=build /master_frontend/build /home/html
 CMD ["nginx", "-g", "daemon off;"]
