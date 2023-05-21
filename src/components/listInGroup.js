@@ -140,16 +140,18 @@ export default function ListInGroup(appProps) {
     
     useEffect(() => {
         let newArr = [];
-        ParseNumIdToString(JSON.parse(localStorage.getItem('usersInGroup')));
-        async function ParseNumIdToString(groupItem) {
-            await Promise.all(groupItem.map(async (item) => {
-                const data = await item
-                data.id = await data.id.toString()
-                newArr.push(data);
-            }))
+        if(localStorage.getItem('usersInGroup') !== null) {
+            ParseNumIdToString(JSON.parse(localStorage.getItem('usersInGroup')));
+            async function ParseNumIdToString(groupItem) {
+                await Promise.all(groupItem.map(async (item) => {
+                    const data = await item
+                    data.id = await data.id.toString()
+                    newArr.push(data);
+                }))
+            }
         }
         setGroupItems(newArr)
-    }, [])
+    }, [localStorage.getItem('usersInGroup')])
 
     useEffect(() => {
         if(localStorage.getItem('reloadTime') === '0') {

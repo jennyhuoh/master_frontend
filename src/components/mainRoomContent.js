@@ -1,4 +1,3 @@
-import websocket, {io} from 'socket.io-client';
 import React, { useRef, useEffect, useState, useCallback, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Box, Button, IconButton, Fab, Tooltip, Backdrop, CircularProgress, Typography, AppBar, Drawer, Divider, TextField, Dialog, DialogTitle, DialogContent, DialogActions, ToggleButtonGroup, ToggleButton } from '@mui/material';
@@ -11,6 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Network } from "vis-network";
 import { DataSet } from "vis-data/peer/esm/vis-data"
 import freeice from 'freeice';
+import socketInit from '../socket';
 import AvatarGroup from 'react-avatar-group';
 import randomColor from 'randomcolor';
 import context from '../context';
@@ -145,8 +145,7 @@ export default function MainRoomContent(pageMainRoomProps) {
     useEffect(() => {
       
         const initChat = async () => {
-            wsRef.current = io('http://localhost:8000/', {}) 
-            await captureMedia();
+            wsRef.current = socketInit();            await captureMedia();
             addNewPeer({...user, muted:true}, () => {
                 const localElement = audioElements.current[user.id];
                 if(localElement) {
@@ -420,12 +419,6 @@ export default function MainRoomContent(pageMainRoomProps) {
         console.log('peers', peers)
         setLocalPeers(peers)
     }, [peers]);
-    // useEffect(() => {
-    //     console.log('peersRef', peersRef.current)
-    //     setPeers(JSON.parse(
-    //         JSON.stringify(peersRef.current)
-    //     ))
-    // }, [peersRef.current])
 
     useEffect(() => {
        
