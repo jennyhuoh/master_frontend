@@ -3,7 +3,7 @@ import axios from 'axios';
 const instance = axios.create({
     // baseURL:'http://localhost:8000/',
     // baseURL: 'http://140.115.126.21:3001',
-    baseURL: 'https://ocd.tornadoedge.app/api',
+    baseURL: 'https://ocd.tornadoedge.app',
     headers: {
         'X-Powered-By':'Express',
         'Content-Type':'application/json',
@@ -18,7 +18,7 @@ const instance = axios.create({
 const recordInstance = axios.create({
     // baseURL: 'http://localhost:8000/',
     // baseURL: 'http://140.115.126.21:3001',
-    baseURL: 'https://ocd.tornadoedge.app/api',
+    baseURL: 'https://ocd.tornadoedge.app',
     headers: {
         'X-Powered-By': 'Express',
         'Content-Type': 'multipart/form-data',
