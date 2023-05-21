@@ -151,7 +151,9 @@ export default function MainRoomContent(pageMainRoomProps) {
                 const localElement = audioElements.current[user.id];
                 if(localElement) {
                     // localElement.volume = 1;
-                    // localElement.muted = true
+                    if(user.id.toString() === localStorage.getItem('userId')) {
+                        localElement.muted = true
+                    }
                     localElement.srcObject = localMediaStream.current;
                 }
             })
