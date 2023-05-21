@@ -10,8 +10,8 @@ const instance = axios.create({
         'Access-Control-Allow-Origin':'*',
         'Access-Control-Allow-Methods':'POST, GET, PUT, DELETE',
         'Access-Control-Max-Age': 26400,
-        "ngrok-skip-browser-warning": true,
-        Origin: window.location.origin
+        // "ngrok-skip-browser-warning": true,
+        // Origin: window.location.origin
     },
     timeout:20000,
 })
@@ -25,8 +25,8 @@ const recordInstance = axios.create({
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'POST, GET, PUT, DELETE',
         'Access-Control-Max-Age': 26400,
-        "ngrok-skip-browser-warning": true,
-        Origin: window.location.origin
+        // "ngrok-skip-browser-warning": true,
+        // Origin: window.location.origin
     },
     timeout: 20000,
 })
@@ -189,49 +189,3 @@ export const updateActivity = async ({id, info}) => {
     return data
 }
 
-
-
-
-
-
-
-
-
-
-
-
-export const getVideoSDKAuthToken = data => instance.get('/get-token', data);
-export const postCreateMeetingId = async (token, data) => {
-    await axios.post('http://localhost:3001/create-meeting/', {token:`${token}`}, {
-        headers: {
-            "Content-Type": "application/json",
-            authorization: `${token}`,
-        },
-    }, data)
-    .then((res) => {
-        console.log(res.data.roomId)
-        localStorage.setItem('meetingId', res.data.roomId)
-        return res.data
-    })
-}
-// export const getRecordings = async (token, roomId, data) => {
-//     await axios.get('http://localhost:3001/get-recordings', {token:`${token}`, roomId: `${roomId}`}, {
-//         headers: {
-//             "Content-Type": "application/json",
-//             Authorization: `${token}`,
-//         },
-// }, data)
-// .then((res) => {
-//     console.log(res.data)
-// })
-// }
-// export const getRecordings = async ({token, roomId}) => { 
-//     const response = await axios.get(`https://api.videosdk.live/v2/recordings?roomId=${roomId}`, {
-//         headers: {
-//             "Content-Type": "application/json",
-//             authorization: `${token}`,
-//         },
-//     })
-//     console.log(response)
-//     return response.data
-// }

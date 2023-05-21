@@ -3,7 +3,7 @@ WORKDIR /master_frontend
 COPY package*.json ./
 RUN yarn install
 COPY . ./
-RUN ["yarn", "start"]
+RUN ["yarn", "run", "build"]
 
 FROM ubuntu:18.04
 RUN apt update -y \
